@@ -16,6 +16,6 @@ export const firebaseConfig = {
 export const WHATSAPP_NUMBER = "201276795766";
 
 // OneSignal: حطي الـ App ID هنا بعدين (من لوحة OneSignal → Settings → Keys & IDs)
-export const ONESIGNAL_APP_ID = "";
+export const ONESIGNAL_APP_ID = "90e985ef-d6b2-4ad1-a419-b18a10142bec";
 
 export const isFirebaseConfigured = () => !firebaseConfig.apiKey.startsWith("PASTE_");

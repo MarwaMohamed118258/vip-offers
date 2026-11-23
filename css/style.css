@@ -207,6 +207,8 @@ table.items tfoot td { font-weight: 900; background: #fbf8fe; border-bottom: 0; 
 .features li { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.1); padding: 14px 16px; border-radius: 14px; font-size: 18px; font-weight: 700; }
 .features li svg { width: 28px; height: 28px; color: var(--yellow); flex: none; }
 
+.ios-note { background: rgba(245,183,0,.15); border: 1px solid var(--yellow); color: #fff; border-radius: 12px; padding: 10px 14px; margin: 0 0 16px; font-size: 15px; font-weight: 600; text-align: right; }
+
 /* ---------- Lightbox ---------- */
 .lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(0,0,0,.85); display: grid; place-items: center; padding: 16px; }
 .lightbox img { max-height: 90vh; border-radius: 12px; }

@@ -1,24 +1,52 @@
 // الإشعارات عن طريق OneSignal Web SDK (v16)
-// لو ONESIGNAL_APP_ID فاضي، بنستخدم إذن المتصفح العادي لحد ما يتحط الـ ID.
+// sw.js هو الـ service worker الوحيد على الموقع، وبيستورد كود OneSignal جواه.
 import { ONESIGNAL_APP_ID } from "./firebase-config.js";
 
-let oneSignalReady = null;
+let OS = null;            // نسخة OneSignal بعد ما الـ init يخلص
+let osReady = null;       // Promise بيخلص لما OneSignal يجهز (أو يفشل)
+
+const listeners = new Set();
+export function onNotifChange(fn) { listeners.add(fn); }
+function notify() { listeners.forEach((fn) => fn(getStatus())); }
+
+// ---------- الآيفون ----------
+export function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+export function isStandalone() {
+  return window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches;
+}
+// على الآيفون الإشعارات بتشتغل بس لو التطبيق متضاف للشاشة الرئيسية
+export const needsIOSInstall = () => isIOS() && !isStandalone();
+
+export function isSupported() {
+  return "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+}
+
+// "granted" | "denied" | "default" | "unsupported" | "ios-install"
+export function getStatus() {
+  if (needsIOSInstall()) return "ios-install";
+  if (!isSupported()) return "unsupported";
+  return Notification.permission;
+}
 
 function loadOneSignal() {
-  if (!ONESIGNAL_APP_ID) return null;
-  if (oneSignalReady) return oneSignalReady;
-  oneSignalReady = new Promise((resolve) => {
+  if (!ONESIGNAL_APP_ID || !isSupported()) return Promise.resolve(null);
+  if (osReady) return osReady;
+  osReady = new Promise((resolve) => {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
-          // بنستخدم نفس الـ service worker بتاع الـ PWA (sw.js بيستورد كود OneSignal)
           serviceWorkerPath: "sw.js",
           serviceWorkerParam: { scope: "/" },
           allowLocalhostAsSecureOrigin: true
         });
-        OneSignal.Notifications.addEventListener("permissionChange", () => notify());
+        OneSignal.Notifications.addEventListener("permissionChange", notify);
+        OS = OneSignal;
         resolve(OneSignal);
       } catch (e) {
         console.warn("OneSignal init failed", e);
@@ -31,21 +59,7 @@ function loadOneSignal() {
     s.onerror = () => resolve(null);
     document.head.appendChild(s);
   });
-  return oneSignalReady;
-}
-
-const listeners = new Set();
-export function onNotifChange(fn) { listeners.add(fn); }
-function notify() { listeners.forEach((fn) => fn(getStatus())); }
-
-export function isSupported() {
-  return "Notification" in window && "serviceWorker" in navigator;
-}
-
-// "granted" | "denied" | "default" | "unsupported"
-export function getStatus() {
-  if (!isSupported()) return "unsupported";
-  return Notification.permission;
+  return osReady;
 }
 
 export async function initNotifications() {
@@ -53,13 +67,18 @@ export async function initNotifications() {
   notify();
 }
 
+// لازم تتنادي مباشرة من ضغطة زرار (الآيفون/سفاري بيرفض الطلب لو مش من ضغطة)
 export async function enableNotifications() {
-  if (!isSupported()) { notify(); return "unsupported"; }
+  const status = getStatus();
+  if (status === "ios-install" || status === "unsupported") { notify(); return status; }
   try {
-    const OneSignal = await loadOneSignal();
+    // لو OneSignal جاهز بنطلب الإذن فوراً عشان منضيّعش ضغطة المستخدم
+    const OneSignal = OS || await loadOneSignal();
     if (OneSignal) {
       await OneSignal.Notifications.requestPermission();
-      if (Notification.permission === "granted") await OneSignal.User.PushSubscription.optIn();
+      if (Notification.permission === "granted" && !OneSignal.User.PushSubscription.optedIn) {
+        await OneSignal.User.PushSubscription.optIn();
+      }
     } else {
       await Notification.requestPermission();
     }
@@ -68,4 +87,19 @@ export async function enableNotifications() {
   }
   notify();
   return getStatus();
+}
+
+// تسجيل sw.js للـ PWA (الشغل من غير نت + التثبيت).
+// لو فيه service worker متسجّل بالفعل (من OneSignal أو قبل كده) منسجلش تاني،
+// عشان OneSignal بيسجّل نفس الملف بـ query مختلفة ومش عايزين الاتنين يتخانقوا.
+export async function registerAppServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/");
+    const url = reg && (reg.active || reg.waiting || reg.installing)?.scriptURL;
+    if (url && new URL(url).pathname === "/sw.js") return;
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  } catch (e) {
+    console.warn("SW registration failed", e);
+  }
 }

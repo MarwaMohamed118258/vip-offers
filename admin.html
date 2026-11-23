@@ -63,6 +63,18 @@
           </form>
         </div>
 
+        <!-- بيظهر بعد حفظ عرض جديد -->
+        <div class="panel" id="push-panel" hidden>
+          <h2 class="section-title">بلّغي العملاء بالعرض الجديد</h2>
+          <div class="calc-box" style="font-weight:600">
+            <div><b>العنوان:</b> <span id="push-title"></span></div>
+            <div><b>الرسالة:</b> <span id="push-message"></span></div>
+          </div>
+          <button type="button" id="push-btn" class="btn btn-yellow btn-block" style="margin-top:12px">ابعتي إشعار للعملاء</button>
+          <p class="meta" style="margin:8px 0 0">الزرار بينسخ النص ويفتح صفحة الإرسال في OneSignal. الصقي العنوان في Title والرسالة في Message.</p>
+          <p id="push-msg" class="error" hidden></p>
+        </div>
+
         <div class="panel">
           <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
             <h2 class="section-title" style="margin:0">العروض الحالية</h2>

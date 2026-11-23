@@ -130,13 +130,55 @@ $("#offer-form").addEventListener("submit", async (e) => {
   const btn = $("#save-btn"); btn.disabled = true;
   try {
     if (editingId) await updateDoc(doc(db, "offers", editingId), data);
-    else await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
+    else {
+      await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
+      showPushPanel(data);
+    }
     showMsg(msg, editingId ? "اتعدّل العرض ✅" : "اتضاف العرض ✅", true);
     resetForm();
     loadOffers();
   } catch (err) {
     console.error(err); showMsg(msg, errText(err));
   } finally { btn.disabled = false; }
+});
+
+// ---------- إشعار العملاء (الإرسال من لوحة OneSignal، مفتاح الـ REST API مش في الموقع) ----------
+const ONESIGNAL_NEW_PUSH = "https://dashboard.onesignal.com/apps/90e985ef-d6b2-4ad1-a419-b18a10142bec/push/new";
+let pushText = null;
+
+function showPushPanel(offer) {
+  const price = Math.round(num(offer.totalOffer)).toLocaleString("en-US");
+  pushText = {
+    title: offer.name,
+    message: `${offer.company} — السعر بعد الخصم ${price} جنيه`
+  };
+  $("#push-title").textContent = pushText.title;
+  $("#push-message").textContent = pushText.message;
+  showMsg($("#push-msg"), "");
+  $("#push-panel").hidden = false;
+  $("#push-panel").scrollIntoView({ behavior: "smooth" });
+}
+
+function copyFallback(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch {}
+  ta.remove();
+  return ok;
+}
+
+$("#push-btn").addEventListener("click", () => {
+  if (!pushText) return;
+  const text = `${pushText.title}\n${pushText.message}`;
+  // ننسخ الأول (لسه الصفحة عليها الفوكس) وبعدين نفتح OneSignal
+  let copied = copyFallback(text);
+  if (!copied && navigator.clipboard) navigator.clipboard.writeText(text).then(() => {}, () => {});
+  window.open(ONESIGNAL_NEW_PUSH, "_blank", "noopener");
+  showMsg($("#push-msg"), copied
+    ? "اتنسخ النص ✅ الصقيه في OneSignal"
+    : "مقدرناش ننسخ تلقائي، انسخي العنوان والرسالة من فوق", copied);
 });
 
 // ---------- قائمة العروض ----------
@@ -190,7 +232,9 @@ $("#admin-offers").addEventListener("click", async (e) => {
 $("#sample-btn").addEventListener("click", async (e) => {
   const btn = e.currentTarget; btn.disabled = true;
   try {
-    await addDoc(collection(db, "offers"), { ...offerPayload(SAMPLE_OFFER), createdAt: serverTimestamp() });
+    const data = offerPayload(SAMPLE_OFFER);
+    await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
+    showPushPanel(data);
     loadOffers();
   } catch (err) { alert(errText(err)); }
   finally { btn.disabled = false; }

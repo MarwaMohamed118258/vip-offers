@@ -1,6 +1,8 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
 import { CATEGORIES, esc, safeUrl, money, num, calcTotals } from "./utils.js";
-import { initNotifications, enableNotifications, getStatus, onNotifChange } from "./notifications.js";
+import {
+  initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker
+} from "./notifications.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const WELCOME_KEY = "vip_welcomed";
@@ -229,10 +231,18 @@ function renderAbout() {
 }
 
 // ---------- الإشعارات ----------
+const IOS_NOTE = "على الآيفون: ضيف التطبيق للشاشة الرئيسية الأول (زرار المشاركة ← «إضافة إلى الشاشة الرئيسية»)، وبعدين افتحه من الأيقونة وفعّل الإشعارات.";
+
 function renderNotif(status = getStatus()) {
-  $("#notif-banner").hidden = !(status === "default" || status === "denied") || !store.get(WELCOME_KEY);
+  const banner = $("#notif-banner");
+  banner.hidden = !["default", "denied", "ios-install"].includes(status) || !store.get(WELCOME_KEY);
+  banner.querySelector("span").textContent = status === "ios-install"
+    ? "على الآيفون: ضيف التطبيق للشاشة الرئيسية الأول عشان الإشعارات"
+    : "فعّل الإشعارات عشان ميفوتكش أي عرض";
+  banner.querySelector("button").hidden = status === "ios-install";
   const box = $("#notif-status");
   const map = {
+    "ios-install": ["ضيف التطبيق للشاشة الرئيسية الأول", IOS_NOTE, ""],
     granted: ["الإشعارات شغّالة ✅", "هيوصلك إشعار مع كل عرض جديد بس، ومن غير إزعاج.", ""],
     default: ["الإشعارات مش متفعّلة", "فعّلها عشان ميفوتكش أي عرض جديد.", `<button class="btn btn-yellow btn-block" data-enable-notif>فعّل الإشعارات</button>`],
     denied: ["الإشعارات مقفولة من المتصفح", "افتح إعدادات الموقع في المتصفح (علامة القفل جنب الرابط) وخلّي الإشعارات «سماح»، وبعدين ارجع هنا.", ""],
@@ -295,23 +305,31 @@ document.addEventListener("click", async (e) => {
 
 $("#company-filter").addEventListener("change", (e) => { state.company = e.target.value; renderHome(); });
 
-$("#welcome-btn").addEventListener("click", async () => {
+$("#welcome-btn").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  // طلب الإذن لازم يبدأ في نفس الضغطة (OneSignal.Notifications.requestPermission)
+  await enableNotifications();
   store.set(WELCOME_KEY, "1");
   $("#welcome").hidden = true;
+  btn.disabled = false;
   location.hash = "#/";
-  await enableNotifications();
+  route();
+  renderNotif();
 });
 
 window.addEventListener("hashchange", route);
 onNotifChange(renderNotif);
 
 // ---------- البداية ----------
-if (!store.get(WELCOME_KEY)) $("#welcome").hidden = false;
+// لو الإشعارات متفعّلة بالفعل، منعرضش شاشة الترحيب
+if (getStatus() === "granted") store.set(WELCOME_KEY, "1");
+if (!store.get(WELCOME_KEY)) {
+  $("#welcome").hidden = false;
+  $("#welcome-ios").hidden = !needsIOSInstall();
+}
 route();
 renderNotif();
 loadOffers();
 initNotifications();
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(console.warn));
-}
+window.addEventListener("load", registerAppServiceWorker);
