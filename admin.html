@@ -78,8 +78,13 @@
         <div class="panel">
           <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
             <h2 class="section-title" style="margin:0">العروض الحالية</h2>
-            <button type="button" id="sample-btn" class="btn btn-sm btn-yellow">ضيفي عرض تجريبي</button>
+            <div class="row-gap">
+              <button type="button" id="import-btn" class="btn btn-sm btn-purple">استيراد عروض من ملف</button>
+              <button type="button" id="sample-btn" class="btn btn-sm btn-yellow">ضيفي عرض تجريبي</button>
+            </div>
+            <input type="file" id="import-file" accept=".json,application/json" hidden>
           </div>
+          <div id="import-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
           <div id="admin-offers" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
         </div>
       </div>

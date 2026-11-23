@@ -2,6 +2,20 @@
 
 export const CATEGORIES = ["شعر", "بشرة", "وزن", "أطفال", "عناية شخصية", "رياضة"];
 
+// الأقسام الأساسية + أي قسم جديد موجود في العروض (زي اللي بييجي من ملف الاستيراد)
+export function allCategories(offers = []) {
+  const extra = [...new Set(offers.map((o) => String(o.category || "").trim()).filter(Boolean))]
+    .filter((c) => !CATEGORIES.includes(c))
+    .sort((a, b) => a.localeCompare(b, "ar"));
+  return [...CATEGORIES, ...extra];
+}
+
+// توحيد اسم العرض للمقارنة (مسافات زيادة، ي/ى، أ/إ/آ، ة/ه)
+export function normTitle(s) {
+  return String(s || "").trim().replace(/\s+/g, " ")
+    .replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").toLowerCase();
+}
+
 // منع حقن HTML من البيانات المخزنة
 export function esc(v) {
   return String(v ?? "").replace(/[&<>"']/g, (c) => ({
@@ -37,6 +51,41 @@ export function calcTotals(products) {
   }
   const discount = totalPublic > 0 ? Math.round((1 - totalOffer / totalPublic) * 100) : 0;
   return { totalPublic, totalOffer, discount, items };
+}
+
+// تحويل عرض من ملف الاستيراد (title, items) لشكل العرض في Firestore (name, products)
+// بيرجّع { offer } لو سليم، أو { reason } لو ناقص
+export function mapImportedOffer(raw) {
+  if (!raw || typeof raw !== "object") return { reason: "مش عرض" };
+  const company = String(raw.company ?? "").trim();
+  const category = String(raw.category ?? "").trim();
+  const name = String(raw.title ?? raw.name ?? "").trim().replace(/\s+/g, " ");
+  const items = Array.isArray(raw.items) ? raw.items : Array.isArray(raw.products) ? raw.products : [];
+  const products = items
+    .filter((p) => p && String(p.name ?? "").trim())
+    .map((p) => ({
+      name: String(p.name).trim(),
+      qty: Math.max(1, num(p.qty) || 1),
+      publicPrice: num(p.publicPrice),
+      offerPrice: num(p.offerPrice)
+    }));
+  if (!name) return { reason: "من غير اسم" };
+  if (!company || !category) return { reason: "ناقصه الشركة أو القسم", name };
+  if (!products.length) return { reason: "من غير منتجات", name };
+
+  // الإجماليات بتتحسب من المنتجات عشان تطابق اللي بيظهر للعميل
+  const t = calcTotals(products);
+  const fileTotal = num(raw.totalOffer);
+  const mismatch = fileTotal > 0 && Math.abs(fileTotal - t.totalOffer) > 1;
+  return {
+    offer: {
+      company, category, name,
+      imageUrl: safeUrl(raw.imageUrl),
+      products,
+      totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items
+    },
+    mismatch
+  };
 }
 
 export const SAMPLE_OFFER = {

@@ -1,5 +1,7 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
-import { CATEGORIES, SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl } from "./utils.js";
+import {
+  allCategories, normTitle, mapImportedOffer, SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl
+} from "./utils.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 
@@ -10,7 +12,8 @@ if (!isFirebaseConfigured()) {
 
 const { db, auth } = await import("./firebase.js");
 const {
-  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, serverTimestamp
+  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, serverTimestamp,
+  writeBatch, Timestamp
 } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 const { signInWithEmailAndPassword, onAuthStateChanged, signOut } =
   await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
@@ -59,7 +62,13 @@ document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click
 }));
 
 // ---------- فورم العرض ----------
-$("#o-category").innerHTML = CATEGORIES.map((c) => `<option>${esc(c)}</option>`).join("");
+function fillCategories(selected = $("#o-category").value) {
+  const cats = allCategories(offers);
+  if (selected && !cats.includes(selected)) cats.push(selected);
+  $("#o-category").innerHTML = cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if (selected) $("#o-category").value = selected;
+}
+fillCategories();
 
 function addProductRow(p = {}) {
   const node = $("#product-tpl").content.firstElementChild.cloneNode(true);
@@ -188,8 +197,15 @@ async function loadOffers() {
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
     offers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   } catch (err) {
-    console.error(err); box.innerHTML = `<p class="error">${esc(errText(err))}</p>`; return;
+    console.error(err); box.innerHTML = `<p class="error">${esc(errText(err))}</p>`; return false;
   }
+  renderAdminList();
+  return true;
+}
+
+function renderAdminList() {
+  const box = $("#admin-offers");
+  fillCategories();
   const names = [...new Set(offers.map((o) => o.company).filter(Boolean))];
   $("#companies").innerHTML = names.map((n) => `<option value="${esc(n)}">`).join("");
   box.innerHTML = offers.length ? offers.map((o) => {
@@ -210,7 +226,7 @@ $("#admin-offers").addEventListener("click", async (e) => {
     if (!o) return;
     editingId = o.id;
     $("#o-company").value = o.company || "";
-    $("#o-category").value = o.category || CATEGORIES[0];
+    fillCategories(o.category || "");
     $("#o-name").value = o.name || "";
     $("#o-image").value = o.imageUrl || "";
     $("#products").innerHTML = "";
@@ -238,6 +254,79 @@ $("#sample-btn").addEventListener("click", async (e) => {
     loadOffers();
   } catch (err) { alert(errText(err)); }
   finally { btn.disabled = false; }
+});
+
+// ---------- استيراد عروض من ملف JSON ----------
+$("#import-btn").addEventListener("click", () => $("#import-file").click());
+
+$("#import-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = ""; // عشان نقدر نختار نفس الملف تاني
+  if (!file) return;
+  const box = $("#import-result");
+  const btn = $("#import-btn");
+  const show = (html, ok = true) => {
+    box.hidden = false; box.innerHTML = html;
+    box.style.background = ok ? "" : "#fde8ec";
+  };
+
+  let list;
+  try {
+    const text = (await file.text()).replace(/^﻿/, "");
+    const parsed = JSON.parse(text);
+    list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.offers) ? parsed.offers : null;
+    if (!list) throw new Error("not-array");
+  } catch {
+    return show("الملف مش مظبوط: لازم يكون JSON فيه قائمة عروض [ ... ]", false);
+  }
+
+  btn.disabled = true;
+  show("جاري الاستيراد…");
+  try {
+    // نتأكد إن القائمة محدّثة قبل ما نقارن الأسامي، ولو فشلت منكمّلش عشان منكرّرش عروض
+    if (!(await loadOffers())) return show("مقدرناش نحمّل العروض الحالية، جرّبي تاني", false);
+    const seen = new Set(offers.map((o) => normTitle(o.name)));
+    const toAdd = [], dup = [], bad = [];
+    let mismatch = 0;
+    for (const raw of list) {
+      const r = mapImportedOffer(raw);
+      if (!r.offer) { bad.push(r.name ? `${r.name} (${r.reason})` : r.reason); continue; }
+      const key = normTitle(r.offer.name);
+      if (seen.has(key)) { dup.push(r.offer.name); continue; }
+      seen.add(key);
+      if (r.mismatch) mismatch++;
+      toAdd.push(r.offer);
+    }
+
+    // أول عرض في الملف يظهر الأول (الأحدث)
+    const now = Date.now();
+    for (let i = 0; i < toAdd.length; i += 400) {
+      const batch = writeBatch(db);
+      toAdd.slice(i, i + 400).forEach((o, j) => {
+        batch.set(doc(collection(db, "offers")), {
+          ...o,
+          createdAt: Timestamp.fromMillis(now - (i + j)),
+          updatedAt: serverTimestamp()
+        });
+      });
+      await batch.commit();
+    }
+    await loadOffers();
+
+    const newCats = [...new Set(toAdd.map((o) => o.category))];
+    show(`
+      <div style="color:var(--green)">✅ اتضاف: ${toAdd.length} عرض</div>
+      <div>⏭️ اتخطّى: ${dup.length + bad.length} عرض</div>
+      ${dup.length ? `<div class="meta">موجودين قبل كده: ${dup.map(esc).join("، ")}</div>` : ""}
+      ${bad.length ? `<div class="meta" style="color:var(--red)">بيانات ناقصة: ${bad.map(esc).join("، ")}</div>` : ""}
+      ${newCats.length ? `<div class="meta">الأقسام: ${newCats.map(esc).join("، ")}</div>` : ""}
+      ${mismatch ? `<div class="meta">ملاحظة: ${mismatch} عرض الإجمالي اللي في الملف مختلف عن مجموع المنتجات، واتحسب من المنتجات.</div>` : ""}`);
+  } catch (err) {
+    console.error(err);
+    show(esc(errText(err)), false);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 // ---------- مانجر مروة ----------

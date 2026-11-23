@@ -1,5 +1,5 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
-import { CATEGORIES, esc, safeUrl, money, num, calcTotals } from "./utils.js";
+import { allCategories, esc, safeUrl, money, num, calcTotals } from "./utils.js";
 import {
   initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker
 } from "./notifications.js";
@@ -63,7 +63,7 @@ function renderFilters() {
   sel.innerHTML = `<option value="">كل الشركات</option>` +
     companies.map((c) => `<option value="${esc(c)}"${c === state.company ? " selected" : ""}>${esc(c)}</option>`).join("");
 
-  $("#category-chips").innerHTML = ["الكل", ...CATEGORIES].map((c) =>
+  $("#category-chips").innerHTML = ["الكل", ...allCategories(state.offers)].map((c) =>
     `<button type="button" class="chip${c === state.category ? " active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === state.category}">${esc(c)}</button>`
   ).join("");
 }
