@@ -109,10 +109,51 @@ export function mapImportedOffer(raw) {
       company, category, name,
       imageUrl: safeUrl(raw.imageUrl),
       products,
-      totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items
+      totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
+      endDate: isDateStr(raw.endDate) ? raw.endDate : ""
     },
     mismatch
   };
+}
+
+// ---------- التواريخ: "جديد" وتاريخ الانتهاء ----------
+const DAY = 86400000;
+export const isDateStr = (s) => /^\d{4}-\d{2}-\d{2}$/.test(String(s || ""));
+
+export function toMillis(v) {
+  if (typeof v === "number") return v;
+  if (v?.toMillis) return v.toMillis();
+  if (typeof v?.seconds === "number") return v.seconds * 1000;
+  return 0;
+}
+
+// تاريخ النهارده بالتوقيت المحلي YYYY-MM-DD
+export function todayStr(now = Date.now()) {
+  const d = new Date(now);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// عدد الأيام من النهارده لتاريخ الانتهاء (0 = آخر يوم النهارده، سالب = خلص)
+export function daysUntil(endDate, now = Date.now()) {
+  const [y1, m1, d1] = todayStr(now).split("-").map(Number);
+  const [y2, m2, d2] = endDate.split("-").map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / DAY);
+}
+
+export function offerStatus(o, now = Date.now()) {
+  const created = toMillis(o.createdAt);
+  const isNew = created > 0 && now - created < 3 * DAY;
+  const daysLeft = isDateStr(o.endDate) ? daysUntil(o.endDate, now) : null;
+  return {
+    isNew,
+    daysLeft,
+    expired: daysLeft !== null && daysLeft < 0,
+    endingSoon: daysLeft !== null && daysLeft >= 0 && daysLeft <= 3
+  };
+}
+
+export function endLabel(daysLeft) {
+  return daysLeft === 0 ? "آخر يوم النهارده" : `ينتهي خلال ${daysLeft} يوم`;
 }
 
 // منتج من ملف الاستيراد → شكل المنتج في Firestore

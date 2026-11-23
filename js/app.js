@@ -1,15 +1,26 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
-import { allCategories, esc, safeUrl, safeImage, money, num, calcTotals } from "./utils.js";
+import {
+  allCategories, esc, safeUrl, safeImage, money, num, calcTotals, offerStatus, endLabel
+} from "./utils.js";
+import {
+  getCart, addToCart, setQty, removeFromCart, clearCart, cartCount,
+  getPharmacy, savePharmacy, getLastOrder, saveLastOrder, buildOrderMessage
+} from "./cart.js";
 import {
   initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker
 } from "./notifications.js";
 
 const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const WELCOME_KEY = "vip_welcomed";
 const CACHE_KEY = "vip_offers_cache";
-
-const state = { offers: [], loaded: false, company: "", category: "الكل", about: null, productImages: new Map() };
 const IMAGES_KEY = "vip_product_images";
+const THANKS = "هيتم تسجيل طلبك ونشكر سيادتكم على ثقتك ونسعد باستمرار التعاون المثمر معك ❤️";
+
+const state = {
+  offers: [], loaded: false, fresh: false, company: "", category: "الكل",
+  about: null, productImages: new Map()
+};
 
 // ---------- تخزين محلي آمن ----------
 const store = {
@@ -32,20 +43,26 @@ async function firestore() {
 }
 
 // ---------- العروض ----------
+// العروض المنتهية بتستخبى من العملاء تلقائياً
+const visibleOffers = () => state.offers.filter((o) => !offerStatus(o).expired);
+const findAvailable = (id) => visibleOffers().find((o) => o.id === id) || null;
+
 async function loadOffers() {
   const cached = store.get(CACHE_KEY);
   if (cached) {
-    try { state.offers = JSON.parse(cached); state.loaded = true; renderHome(); } catch {}
+    try { state.offers = JSON.parse(cached); state.loaded = true; rerender(); } catch {}
   }
   try {
     const { db, collection, getDocs, query, orderBy } = await firestore();
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
     state.offers = snap.docs.map((d) => {
       const data = d.data();
-      return { id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() || 0 };
+      return { id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() || 0, updatedAt: undefined };
     });
     state.loaded = true;
+    state.fresh = true;
     store.set(CACHE_KEY, JSON.stringify(state.offers));
+    pruneCart();
   } catch (e) {
     console.error(e);
     if (!state.loaded) {
@@ -54,9 +71,17 @@ async function loadOffers() {
         : "مش قادرين نحمّل العروض دلوقتي، اتأكد من النت وجرّب تاني";
     }
   }
-  renderHome();
-  if (currentRoute().name === "offer") renderOffer(currentRoute().id);
+  rerender();
   loadProductImages();
+}
+
+// بعد ما العروض تتحمّل من النت: نشيل من السلة أي عرض اتمسح أو خلص
+function pruneCart() {
+  const gone = getCart().filter((x) => !findAvailable(x.id)).map((x) => x.id);
+  if (gone.length) {
+    removeFromCart(...gone);
+    toast(gone.length === 1 ? "اتشال عرض من السلة لأنه خلص" : `اتشال ${gone.length} عروض من السلة لأنها خلصت`);
+  }
 }
 
 // ---------- صور المنتجات ----------
@@ -70,7 +95,7 @@ async function loadProductImages() {
     try { state.productImages = new Map(JSON.parse(store.get(IMAGES_KEY) || "[]")); } catch {}
     if (state.productImages.size) rerender();
   }
-  const ids = [...new Set(state.offers.flatMap((o) => (o.products || [])
+  const ids = [...new Set(visibleOffers().flatMap((o) => (o.products || [])
     .filter((it) => it.productId && !safeImage(it.image)).map((it) => it.productId)))];
   if (!ids.length) return;
   try {
@@ -91,25 +116,41 @@ async function loadProductImages() {
 
 function rerender() {
   renderHome();
-  if (currentRoute().name === "offer") renderOffer(currentRoute().id);
+  const r = currentRoute();
+  if (r.name === "offer") renderOffer(r.id);
+  if (r.name === "cart") renderCart();
+  updateCartBadge();
+  updateReorder();
 }
 
-function renderFilters() {
-  const sel = $("#company-filter");
-  const companies = [...new Set(state.offers.map((o) => o.company).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
-  sel.innerHTML = `<option value="">كل الشركات</option>` +
-    companies.map((c) => `<option value="${esc(c)}"${c === state.company ? " selected" : ""}>${esc(c)}</option>`).join("");
-
-  $("#category-chips").innerHTML = ["الكل", ...allCategories(state.offers)].map((c) =>
-    `<button type="button" class="chip${c === state.category ? " active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === state.category}">${esc(c)}</button>`
-  ).join("");
+// ---------- أجزاء مشتركة ----------
+function badges(o) {
+  const s = offerStatus(o);
+  const out = [];
+  if (s.isNew) out.push(`<span class="badge badge-new">جديد</span>`);
+  if (s.endingSoon) out.push(`<span class="badge badge-ending">⏳ ${endLabel(s.daysLeft)}</span>`);
+  return out.length ? `<div class="badges">${out.join("")}</div>` : "";
 }
+
+const profitText = (amount) => `مكسبك لو بعت بسعر الجمهور: ${money(amount)}`;
 
 function thumbs(o) {
   const imgs = (o.products || []).map(itemImage).filter(Boolean);
   if (!imgs.length) return "";
   const shown = imgs.slice(0, 4);
   return `<div class="thumbs">${shown.map((src) => `<img src="${esc(src)}" alt="" loading="lazy">`).join("")}${imgs.length > 4 ? `<span class="more">+${imgs.length - 4}</span>` : ""}</div>`;
+}
+
+// ---------- الصفحة الرئيسية ----------
+function renderFilters(offers) {
+  const sel = $("#company-filter");
+  const companies = [...new Set(offers.map((o) => o.company).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+  sel.innerHTML = `<option value="">كل الشركات</option>` +
+    companies.map((c) => `<option value="${esc(c)}"${c === state.company ? " selected" : ""}>${esc(c)}</option>`).join("");
+
+  $("#category-chips").innerHTML = ["الكل", ...allCategories(offers)].map((c) =>
+    `<button type="button" class="chip${c === state.category ? " active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === state.category}">${esc(c)}</button>`
+  ).join("");
 }
 
 function offerCard(o) {
@@ -122,6 +163,7 @@ function offerCard(o) {
     ${img ? `<img class="img" src="${esc(img)}" alt="" loading="lazy">` : ""}
     ${t.discount > 0 ? `<span class="discount-badge">خصم ${t.discount}%</span>` : ""}
     <div class="body">
+      ${badges(o)}
       <div class="company"><svg><use href="#i-check"/></svg>${esc(o.company)}</div>
       <div class="meta">${esc(o.category)} · ${t.items} صنف</div>
       <h2 class="offer-name">${esc(o.name)}</h2>
@@ -131,19 +173,24 @@ function offerCard(o) {
         <span class="price-new">${money(t.totalOffer)}</span>
         <span class="price-old">${money(t.totalPublic)}</span>
       </div>
-      <a class="btn btn-purple btn-block" href="#/offer/${encodeURIComponent(o.id)}">التفاصيل</a>
+      ${t.totalPublic > t.totalOffer ? `<p class="profit">${profitText(t.totalPublic - t.totalOffer)}</p>` : ""}
+      <div class="card-actions">
+        <a class="btn btn-purple" href="#/offer/${encodeURIComponent(o.id)}">التفاصيل</a>
+        <button type="button" class="btn btn-yellow" data-add="${esc(o.id)}" aria-label="أضف للسلة"><svg><use href="#i-cart"/></svg>أضف</button>
+      </div>
     </div>
   </article>`;
 }
 
 function renderHome() {
-  renderFilters();
+  const offers = visibleOffers();
+  renderFilters(offers);
   const list = $("#offers-list");
   if (!state.loaded) {
     if (state.error) list.innerHTML = `<p class="state-msg">${esc(state.error)}</p>`;
     return;
   }
-  const items = state.offers.filter((o) =>
+  const items = offers.filter((o) =>
     (!state.company || o.company === state.company) &&
     (state.category === "الكل" || o.category === state.category)
   );
@@ -153,13 +200,9 @@ function renderHome() {
 }
 
 // ---------- تفاصيل العرض ----------
-function whatsappLink(text) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-}
-
 function renderOffer(id) {
   const body = $("#d-body");
-  const o = state.offers.find((x) => x.id === id);
+  const o = findAvailable(id);
   if (!o) {
     $("#d-name").textContent = "تفاصيل العرض";
     $("#d-company").textContent = "";
@@ -183,9 +226,14 @@ function renderOffer(id) {
     </tr>`;
   }).join("");
 
+  // نحافظ على الكمية لو الصفحة اترسمت تاني (مثلاً بعد ما الصور تتحمّل)
+  const prevQty = body.dataset.offerId === o.id ? Number(body.dataset.qty) || 1 : 1;
+  body.dataset.offerId = o.id;
+
   body.innerHTML = `
     ${img ? `<img src="${esc(img)}" alt="" style="margin-top:16px;border-radius:16px;width:100%">` : ""}
     <div class="panel">
+      ${badges(o)}
       <div class="price-row" style="justify-content:space-between">
         <div class="company"><svg><use href="#i-check"/></svg>${esc(o.company)}</div>
         ${t.discount > 0 ? `<span class="discount-badge" style="position:static">خصم ${t.discount}%</span>` : ""}
@@ -214,35 +262,218 @@ function renderOffer(id) {
       <div class="summary">
         <div><span>سعر الجمهور</span><span class="price-old" id="s-public"></span></div>
         <div class="total"><span>الإجمالي</span><span id="s-total"></span></div>
-        <div class="save"><span>هتوفّر</span><span id="s-save"></span></div>
       </div>
+      <p class="profit" id="s-profit" style="margin:12px 0 0"></p>
     </div>
-    <a id="wa-btn" class="btn btn-green btn-block" style="margin-top:16px" target="_blank" rel="noopener">
-      <svg><use href="#i-wa"/></svg>اطلب على واتساب
-    </a>`;
+    <div class="form-grid" style="margin-top:16px">
+      <button type="button" id="add-cart-btn" class="btn btn-yellow btn-block"><svg><use href="#i-cart"/></svg>أضف للسلة</button>
+      <button type="button" id="wa-btn" class="btn btn-green btn-block"><svg><use href="#i-wa"/></svg>اطلب على واتساب</button>
+    </div>`;
 
-  let qty = 1;
+  let qty = prevQty;
   const update = () => {
+    body.dataset.qty = qty;
     $("#qty").textContent = qty;
     $("#s-public").textContent = money(t.totalPublic * qty);
     $("#s-total").textContent = money(t.totalOffer * qty);
-    $("#s-save").textContent = money((t.totalPublic - t.totalOffer) * qty);
-    const msg =
-      `أهلاً، عايز أطلب العرض ده:\n` +
-      `العرض: ${o.name}\n` +
-      `الشركة: ${o.company}\n` +
-      `الكمية: ${qty} كورس\n` +
-      `الإجمالي: ${money(t.totalOffer * qty)}`;
-    $("#wa-btn").href = whatsappLink(msg);
+    $("#s-profit").textContent = profitText((t.totalPublic - t.totalOffer) * qty);
   };
-  body.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", () => {
+  $$("[data-step]", body).forEach((b) => b.addEventListener("click", () => {
     qty = Math.min(999, Math.max(1, qty + Number(b.dataset.step)));
     update();
   }));
+  $("#add-cart-btn").addEventListener("click", () => {
+    addToCart(o.id, qty);
+    toast(`اتضاف للسلة (${qty}) ✅`);
+  });
+  $("#wa-btn").addEventListener("click", () => startOrder([{ id: o.id, qty }], false));
   update();
 }
 
+// ---------- السلة ----------
+function cartLines() {
+  return getCart().map((x) => {
+    const o = findAvailable(x.id);
+    if (!o) return null;
+    const t = calcTotals(o.products);
+    return { id: o.id, qty: x.qty, offer: o, unitPrice: t.totalOffer, unitPublic: t.totalPublic };
+  }).filter(Boolean);
+}
+
+function renderCart() {
+  const body = $("#cart-body");
+  const pharm = getPharmacy();
+  const pharmBox = `
+    <div class="panel pharm-box">
+      <div class="info">
+        ${pharm
+          ? `<b>🏪 ${esc(pharm.name)}</b><div class="meta">📍 ${esc(pharm.area)}</div>`
+          : `<b>بيانات الصيدلية / المخزن</b><div class="meta">هنسألك عنها أول مرة تبعت فيها طلب</div>`}
+      </div>
+      <button type="button" class="btn btn-sm btn-ghost" data-edit-pharm>${pharm ? "تعديل" : "ضيف البيانات"}</button>
+    </div>`;
+  const reorderBtn = `<button type="button" class="btn btn-ghost btn-block" data-reorder hidden style="margin-top:16px">🔁 اطلب نفس طلبك اللي فات</button>`;
+
+  if (!state.loaded) { body.innerHTML = `<div class="skeleton" style="margin-top:16px"></div>`; return; }
+  const lines = cartLines();
+  if (!lines.length) {
+    body.innerHTML = `
+      ${reorderBtn}
+      <div class="panel state-msg">
+        <svg width="56" height="56" style="color:var(--purple)"><use href="#i-cart"/></svg>
+        <p style="margin:8px 0 14px">السلة فاضية</p>
+        <a class="btn btn-purple btn-block" href="#/">شوف العروض</a>
+      </div>
+      ${pharmBox}`;
+    updateReorder();
+    return;
+  }
+
+  const total = lines.reduce((s, l) => s + l.qty * l.unitPrice, 0);
+  const profit = lines.reduce((s, l) => s + l.qty * (l.unitPublic - l.unitPrice), 0);
+  body.innerHTML = `
+    <div class="panel">
+      ${lines.map((l) => {
+        const img = (l.offer.products || []).map(itemImage).find(Boolean);
+        return `
+        <div class="cart-item">
+          <div class="top">
+            ${img ? `<img class="thumb" src="${esc(img)}" alt="">` : ""}
+            <div class="info">
+              <b>${esc(l.offer.name)}</b>
+              <div class="meta">${esc(l.offer.company)} · ${money(l.unitPrice)} للكورس</div>
+            </div>
+            <button type="button" class="remove-btn" data-remove="${esc(l.id)}">شيل</button>
+          </div>
+          <div class="line">
+            <div class="stepper sm">
+              <button type="button" data-cart-step="1" data-id="${esc(l.id)}" aria-label="زوّد">+</button>
+              <output>${l.qty}</output>
+              <button type="button" data-cart-step="-1" data-id="${esc(l.id)}" aria-label="قلّل">−</button>
+            </div>
+            <span class="price-new" style="font-size:20px">${money(l.qty * l.unitPrice)}</span>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="panel">
+      <div class="grand"><span>الإجمالي</span><span>${money(total)}</span></div>
+      ${profit > 0 ? `<p class="profit" style="margin:10px 0 0">${profitText(profit)}</p>` : ""}
+    </div>
+    ${pharmBox}
+    <button type="button" id="send-order" class="btn btn-green btn-block" style="margin-top:16px"><svg><use href="#i-wa"/></svg>ابعت الطلب</button>
+    ${reorderBtn}`;
+  $("#send-order").addEventListener("click", () => startOrder(getCart(), true));
+  updateReorder();
+}
+
+function updateCartBadge() {
+  const n = cartCount();
+  const el = $("#cart-count");
+  el.hidden = n === 0;
+  el.textContent = n > 99 ? "99+" : n;
+}
+
+// ---------- إرسال الطلب ----------
+// items: [{ id, qty }] — fromCart: لو الطلب من السلة نفضّيها بعد الإرسال
+function startOrder(items, fromCart) {
+  const available = items.filter((x) => findAvailable(x.id));
+  if (!available.length) { toast("العروض دي مبقتش متاحة"); return; }
+  const pharm = getPharmacy();
+  if (pharm) sendOrder(available, fromCart, pharm);
+  else openPharmacyModal((p) => sendOrder(available, fromCart, p), true);
+}
+
+function openWhatsApp(text) {
+  const a = document.createElement("a");
+  a.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function sendOrder(items, fromCart, pharm) {
+  const lines = items.map((x) => {
+    const o = findAvailable(x.id);
+    return { name: o.name, company: o.company, qty: x.qty, unitPrice: calcTotals(o.products).totalOffer };
+  });
+  openWhatsApp(buildOrderMessage(pharm, lines));
+  saveLastOrder(items);
+  if (fromCart) clearCart();
+  rerender();
+  showThanks();
+}
+
+// ---------- نوافذ ----------
+function openModal(html) {
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">${html}</div>`;
+  m.addEventListener("click", (e) => { if (e.target === m || e.target.closest("[data-close]")) m.remove(); });
+  document.body.appendChild(m);
+  return m;
+}
+
+function openPharmacyModal(onSaved, sending = false) {
+  const p = getPharmacy() || { name: "", area: "" };
+  const m = openModal(`
+    <h2>بيانات الصيدلية / المخزن</h2>
+    <p>بنسجّلها مرة واحدة على جهازك وبتتبعت مع كل طلب.</p>
+    <form class="form-grid">
+      <div class="field"><label for="ph-name">اسم الصيدلية / المخزن</label><input id="ph-name" class="input" required value="${esc(p.name)}" autocomplete="organization"></div>
+      <div class="field"><label for="ph-area">المنطقة</label><input id="ph-area" class="input" required value="${esc(p.area)}"></div>
+      <button type="submit" class="btn ${sending ? "btn-green" : "btn-purple"} btn-block">${sending ? `<svg><use href="#i-wa"/></svg>احفظ وابعت الطلب` : "حفظ"}</button>
+      <button type="button" class="btn btn-ghost btn-block" data-close>إلغاء</button>
+    </form>`);
+  $("#ph-name", m).focus();
+  $("form", m).addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = $("#ph-name", m).value.trim();
+    const area = $("#ph-area", m).value.trim();
+    if (!name || !area) return;
+    savePharmacy(name, area);
+    m.remove();
+    if (onSaved) onSaved(getPharmacy());
+    else { renderCart(); toast("اتحفظت البيانات ✅"); }
+  });
+}
+
+function showThanks() {
+  openModal(`
+    <div class="thanks">
+      <p>${THANKS}</p>
+      <button type="button" class="btn btn-purple btn-block" data-close>تمام</button>
+    </div>`);
+}
+
+// ---------- اطلب نفس طلبك اللي فات ----------
+function reorderItems() {
+  const last = getLastOrder();
+  return last ? last.items.filter((x) => findAvailable(x.id)) : [];
+}
+function updateReorder() {
+  const show = state.loaded && reorderItems().length > 0;
+  $$("[data-reorder]").forEach((b) => { b.hidden = !show; });
+}
+function reorder() {
+  const last = getLastOrder();
+  const items = reorderItems();
+  if (!items.length) { updateReorder(); return; }
+  items.forEach((x) => addToCart(x.id, x.qty));
+  const missing = (last?.items.length || 0) - items.length;
+  toast(missing > 0
+    ? `اتضاف ${items.length} عرض للسلة، و${missing} مبقاش متاح`
+    : "اتضاف طلبك اللي فات للسلة ✅");
+  if (currentRoute().name === "cart") renderCart(); else location.hash = "#/cart";
+}
+
 // ---------- مانجر مروة ----------
+function whatsappLink(text) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
+
 async function loadAbout() {
   const body = $("#about-body");
   try {
@@ -301,18 +532,18 @@ function renderNotif(status = getStatus()) {
 function currentRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   if (h.startsWith("offer/")) return { name: "offer", id: decodeURIComponent(h.slice(6)) };
-  if (h === "notifications") return { name: "notifications" };
-  if (h === "about") return { name: "about" };
+  if (["notifications", "about", "cart"].includes(h)) return { name: h };
   return { name: "home" };
 }
 
 function route() {
   const r = currentRoute();
-  document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+  $$(".view").forEach((v) => v.classList.remove("active"));
   $(`#view-${r.name}`).classList.add("active");
-  document.querySelectorAll("[data-nav]").forEach((a) =>
+  $$("[data-nav]").forEach((a) =>
     a.classList.toggle("active", a.dataset.nav === r.name || (r.name === "offer" && a.dataset.nav === "home")));
   if (r.name === "offer") renderOffer(r.id);
+  if (r.name === "cart") renderCart();
   if (r.name === "about" && !state.about) loadAbout();
   if (r.name === "notifications") renderNotif();
   window.scrollTo(0, 0);
@@ -330,6 +561,23 @@ function toast(msg) {
 document.addEventListener("click", async (e) => {
   const chip = e.target.closest("[data-cat]");
   if (chip) { state.category = chip.dataset.cat; renderHome(); return; }
+
+  const add = e.target.closest("[data-add]");
+  if (add) { addToCart(add.dataset.add, 1); toast("اتضاف للسلة ✅"); return; }
+
+  const step = e.target.closest("[data-cart-step]");
+  if (step) {
+    const it = getCart().find((x) => x.id === step.dataset.id);
+    if (it) setQty(it.id, it.qty + Number(step.dataset.cartStep));
+    renderCart();
+    return;
+  }
+
+  const rm = e.target.closest("[data-remove]");
+  if (rm) { removeFromCart(rm.dataset.remove); renderCart(); return; }
+
+  if (e.target.closest("[data-edit-pharm]")) { openPharmacyModal(null); return; }
+  if (e.target.closest("[data-reorder]")) { reorder(); return; }
 
   if (e.target.closest("[data-enable-notif]")) {
     const s = await enableNotifications();
@@ -364,6 +612,9 @@ $("#welcome-btn").addEventListener("click", async (e) => {
 });
 
 window.addEventListener("hashchange", route);
+window.addEventListener("cart-change", () => { updateCartBadge(); updateReorder(); });
+// لو السلة اتغيّرت من تاب تاني
+window.addEventListener("storage", (e) => { if (e.key === "vip_cart") rerender(); });
 onNotifChange(renderNotif);
 
 // ---------- البداية ----------
@@ -375,6 +626,7 @@ if (!store.get(WELCOME_KEY)) {
 }
 route();
 renderNotif();
+updateCartBadge();
 loadOffers();
 initNotifications();
 window.addEventListener("load", registerAppServiceWorker);

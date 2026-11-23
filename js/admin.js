@@ -1,7 +1,7 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
 import {
   allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
-  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage
+  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 
@@ -458,6 +458,7 @@ function offerPayload(o) {
   return {
     company: o.company.trim(), category: o.category, name: o.name.trim(),
     imageUrl: safeUrl(o.imageUrl), products: items,
+    endDate: isDateStr(o.endDate) ? o.endDate : "",
     totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
     updatedAt: serverTimestamp()
   };
@@ -483,7 +484,7 @@ $("#offer-form").addEventListener("submit", async (e) => {
   if (!items.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
   const data = offerPayload({
     company: $("#o-company").value, category: $("#o-category").value,
-    name: $("#o-name").value, imageUrl: $("#o-image").value, products: items
+    name: $("#o-name").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items
   });
   const btn = $("#save-btn"); btn.disabled = true;
   try {
@@ -557,8 +558,12 @@ function renderAdminList() {
   fillLists();
   $("#admin-offers").innerHTML = offers.length ? offers.map((o) => {
     const t = calcTotals(o.products);
-    return `<div class="admin-item">
-      <div class="info"><b>${esc(o.name)}</b><small>${esc(o.company)} · ${esc(o.category)} · ${money(t.totalOffer)} (خصم ${t.discount}%)</small></div>
+    const st = offerStatus(o);
+    const tag = st.expired ? `<span class="badge badge-expired">منتهي</span>`
+      : st.endingSoon ? `<span class="badge badge-ending">${endLabel(st.daysLeft)}</span>`
+      : st.isNew ? `<span class="badge badge-new">جديد</span>` : "";
+    return `<div class="admin-item"${st.expired ? ' style="opacity:.6"' : ""}>
+      <div class="info"><b>${esc(o.name)} ${tag}</b><small>${esc(o.company)} · ${esc(o.category)} · ${money(t.totalOffer)} (خصم ${t.discount}%)</small></div>
       <button class="btn btn-sm btn-ghost" data-edit="${esc(o.id)}">تعديل</button>
       <button class="btn btn-sm btn-red" data-del="${esc(o.id)}">مسح</button>
     </div>`;
@@ -576,6 +581,7 @@ $("#admin-offers").addEventListener("click", async (e) => {
     setCategory(o.category || "");
     $("#o-name").value = o.name || "";
     $("#o-image").value = o.imageUrl || "";
+    $("#o-end").value = isDateStr(o.endDate) ? o.endDate : "";
     $("#products").innerHTML = "";
     (o.products?.length ? o.products : [{}]).forEach(addItemRow);
     itemsChanged();
