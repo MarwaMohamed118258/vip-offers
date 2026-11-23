@@ -4,12 +4,12 @@
 // (مفاتيح Firebase دي مش سرية، الحماية الحقيقية في firestore.rules)
 // =====================================================================
 export const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyDUygrnvI6si7K-7_oNbKFk5MFpBcLazL4",
+  authDomain: "vip-offers-961c8.firebaseapp.com",
+  projectId: "vip-offers-961c8",
+  storageBucket: "vip-offers-961c8.firebasestorage.app",
+  messagingSenderId: "783880103025",
+  appId: "1:783880103025:web:77fc769589367f17afe7d0"
 };
 
 // رقم واتساب الطلبات (بالصيغة الدولية من غير +)
