@@ -1,5 +1,5 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
-import { allCategories, esc, safeUrl, money, num, calcTotals } from "./utils.js";
+import { allCategories, esc, safeUrl, safeImage, money, num, calcTotals } from "./utils.js";
 import {
   initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker
 } from "./notifications.js";
@@ -8,7 +8,8 @@ const $ = (s, el = document) => el.querySelector(s);
 const WELCOME_KEY = "vip_welcomed";
 const CACHE_KEY = "vip_offers_cache";
 
-const state = { offers: [], loaded: false, company: "", category: "الكل", about: null };
+const state = { offers: [], loaded: false, company: "", category: "الكل", about: null, productImages: new Map() };
+const IMAGES_KEY = "vip_product_images";
 
 // ---------- تخزين محلي آمن ----------
 const store = {
@@ -55,6 +56,42 @@ async function loadOffers() {
   }
   renderHome();
   if (currentRoute().name === "offer") renderOffer(currentRoute().id);
+  loadProductImages();
+}
+
+// ---------- صور المنتجات ----------
+// الصور المرفوعة محفوظة في مستند المنتج (products/{id})، فبنجيبها للمنتجات اللي في العروض بس
+function itemImage(it) {
+  return safeImage(it.image) || safeImage(state.productImages.get(it.productId));
+}
+
+async function loadProductImages() {
+  if (!state.productImages.size) {
+    try { state.productImages = new Map(JSON.parse(store.get(IMAGES_KEY) || "[]")); } catch {}
+    if (state.productImages.size) rerender();
+  }
+  const ids = [...new Set(state.offers.flatMap((o) => (o.products || [])
+    .filter((it) => it.productId && !safeImage(it.image)).map((it) => it.productId)))];
+  if (!ids.length) return;
+  try {
+    const { db, collection, getDocs, query, where, documentId } = await firestore();
+    const fresh = new Map();
+    for (let i = 0; i < ids.length; i += 30) {
+      const snap = await getDocs(query(collection(db, "products"), where(documentId(), "in", ids.slice(i, i + 30))));
+      snap.forEach((d) => { const img = safeImage(d.data().image); if (img) fresh.set(d.id, img); });
+    }
+    state.productImages = fresh;
+    const json = JSON.stringify([...fresh]);
+    if (json.length < 2_000_000) store.set(IMAGES_KEY, json); // نحفظها عشان تظهر بسرعة ومن غير نت
+    rerender();
+  } catch (e) {
+    console.warn("product images", e);
+  }
+}
+
+function rerender() {
+  renderHome();
+  if (currentRoute().name === "offer") renderOffer(currentRoute().id);
 }
 
 function renderFilters() {
@@ -66,6 +103,13 @@ function renderFilters() {
   $("#category-chips").innerHTML = ["الكل", ...allCategories(state.offers)].map((c) =>
     `<button type="button" class="chip${c === state.category ? " active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === state.category}">${esc(c)}</button>`
   ).join("");
+}
+
+function thumbs(o) {
+  const imgs = (o.products || []).map(itemImage).filter(Boolean);
+  if (!imgs.length) return "";
+  const shown = imgs.slice(0, 4);
+  return `<div class="thumbs">${shown.map((src) => `<img src="${esc(src)}" alt="" loading="lazy">`).join("")}${imgs.length > 4 ? `<span class="more">+${imgs.length - 4}</span>` : ""}</div>`;
 }
 
 function offerCard(o) {
@@ -82,6 +126,7 @@ function offerCard(o) {
       <div class="meta">${esc(o.category)} · ${t.items} صنف</div>
       <h2 class="offer-name">${esc(o.name)}</h2>
       <p class="products-short">${esc(short)}</p>
+      ${thumbs(o)}
       <div class="price-row">
         <span class="price-new">${money(t.totalOffer)}</span>
         <span class="price-old">${money(t.totalPublic)}</span>
@@ -131,7 +176,7 @@ function renderOffer(id) {
   const rows = (o.products || []).map((p) => {
     const q = Math.max(1, num(p.qty) || 1);
     return `<tr>
-      <td>${esc(p.name)}</td>
+      <td><div class="item-cell">${itemImage(p) ? `<img src="${esc(itemImage(p))}" alt="" loading="lazy">` : ""}<span>${esc(p.name)}</span></div></td>
       <td class="num">${q}</td>
       <td class="num old">${money(num(p.publicPrice) * q)}</td>
       <td class="num new">${money(num(p.offerPrice) * q)}</td>

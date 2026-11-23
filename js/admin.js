@@ -1,9 +1,12 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
 import {
-  allCategories, normTitle, mapImportedOffer, SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl
+  allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
+  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage
 } from "./utils.js";
+import { compressImage, imageKB } from "./image.js";
 
 const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
 if (!isFirebaseConfigured()) {
   $("main").innerHTML = `<p class="state-msg">لسه إعدادات Firebase متحطتش في <code>js/firebase-config.js</code></p>`;
@@ -19,7 +22,11 @@ const { signInWithEmailAndPassword, onAuthStateChanged, signOut } =
   await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
 
 let offers = [];
-let editingId = null;
+let products = [];
+let productsById = new Map();
+let editingId = null;          // العرض اللي بيتعدّل
+let editingProductId = null;   // المنتج اللي بيتعدّل
+let pendingImage = "";         // صورة المنتج في الفورم (data URL أو رابط)
 
 function showMsg(el, text, ok = false) {
   el.hidden = !text;
@@ -28,18 +35,54 @@ function showMsg(el, text, ok = false) {
 }
 
 function errText(e) {
-  if (e?.code === "permission-denied") return "مفيش صلاحية. اتأكدي إن حسابك متضاف في مجموعة admins في Firestore.";
+  if (e?.code === "permission-denied") return "مفيش صلاحية. اتأكدي إن حسابك متضاف في مجموعة admins وإن قواعد Firestore متحدّثة.";
   if (e?.code?.startsWith("auth/")) return "الإيميل أو الباسورد غلط";
+  if (e?.code === "invalid-argument") return "البيانات كبيرة أو فيها مشكلة، جرّبي صورة أصغر";
   return "حصلت مشكلة، جرّبي تاني";
 }
 
+// صندوق نتيجة (للاستيراد)
+function resultBox(el) {
+  return (html, ok = true) => {
+    el.hidden = false; el.innerHTML = html;
+    el.style.background = ok ? "" : "#fde8ec";
+  };
+}
+
+async function readJsonList(file, key) {
+  const text = (await file.text()).replace(/^﻿/, "");
+  const parsed = JSON.parse(text);
+  const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.[key]) ? parsed[key] : null;
+  if (!list) throw new Error("not-array");
+  return list;
+}
+
+// كتابة مستندات كتير على دفعات (حد Firestore: 500 عملية و ~10MB للدفعة)
+async function writeInBatches(col, docs, extra) {
+  let batch = writeBatch(db), count = 0, bytes = 0;
+  for (let i = 0; i < docs.length; i++) {
+    const size = JSON.stringify(docs[i]).length;
+    if (count && (count >= 400 || bytes + size > 8_000_000)) {
+      await batch.commit();
+      batch = writeBatch(db); count = 0; bytes = 0;
+    }
+    batch.set(doc(collection(db, col)), { ...docs[i], ...extra(i) });
+    count++; bytes += size;
+  }
+  if (count) await batch.commit();
+}
+
 // ---------- تسجيل الدخول ----------
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   $("#login-view").hidden = !!user;
   $("#admin-view").hidden = !user;
   $("#logout").hidden = !user;
   $("#who").textContent = user ? user.email : "سجّلي دخول الأول";
-  if (user) { loadOffers(); loadAbout(); }
+  if (user) {
+    await loadProducts();
+    await loadOffers();
+    loadAbout();
+  }
 });
 
 $("#login-form").addEventListener("submit", async (e) => {
@@ -55,57 +98,353 @@ $("#login-form").addEventListener("submit", async (e) => {
 $("#logout").addEventListener("click", () => signOut(auth));
 
 // ---------- التبويبات ----------
-document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => {
-  document.querySelectorAll("[data-tab]").forEach((x) => x.className = "btn " + (x === b ? "btn-purple" : "btn-ghost"));
-  $("#tab-offers").hidden = b.dataset.tab !== "offers";
-  $("#tab-about").hidden = b.dataset.tab !== "about";
+$$("[data-tab]").forEach((b) => b.addEventListener("click", () => {
+  $$("[data-tab]").forEach((x) => x.className = "btn " + (x === b ? "btn-purple" : "btn-ghost"));
+  for (const t of ["offers", "products", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
 }));
 
-// ---------- فورم العرض ----------
-function fillCategories(selected = $("#o-category").value) {
-  const cats = allCategories(offers);
-  if (selected && !cats.includes(selected)) cats.push(selected);
-  $("#o-category").innerHTML = cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
-  if (selected) $("#o-category").value = selected;
+// ---------- قوائم مشتركة (الشركات والأقسام) ----------
+function fillLists() {
+  const cats = allCategories([...offers, ...products]);
+  const sel = $("#o-category").value;
+  const opts = sel && !cats.includes(sel) ? [...cats, sel] : cats;
+  $("#o-category").innerHTML = opts.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if (sel) $("#o-category").value = sel;
+  $("#categories-list").innerHTML = cats.map((c) => `<option value="${esc(c)}">`).join("");
+  const companies = [...new Set([...offers, ...products].map((o) => o.company).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "ar"));
+  $("#companies").innerHTML = companies.map((n) => `<option value="${esc(n)}">`).join("");
 }
-fillCategories();
-
-function addProductRow(p = {}) {
-  const node = $("#product-tpl").content.firstElementChild.cloneNode(true);
-  for (const f of ["name", "qty", "publicPrice", "offerPrice"]) {
-    if (p[f] !== undefined) node.querySelector(`[data-f="${f}"]`).value = p[f];
+function setCategory(c) {
+  $("#o-category").value = c;
+  if (c && $("#o-category").value !== c) {
+    $("#o-category").insertAdjacentHTML("beforeend", `<option value="${esc(c)}">${esc(c)}</option>`);
+    $("#o-category").value = c;
   }
-  node.querySelector("[data-remove]").addEventListener("click", () => {
-    if ($("#products").children.length > 1) node.remove();
-    updateCalc();
-  });
-  $("#products").appendChild(node);
 }
 
-function readProducts() {
-  return [...$("#products").children].map((row) => ({
-    name: row.querySelector('[data-f="name"]').value.trim(),
-    qty: Math.max(1, num(row.querySelector('[data-f="qty"]').value) || 1),
-    publicPrice: num(row.querySelector('[data-f="publicPrice"]').value),
-    offerPrice: num(row.querySelector('[data-f="offerPrice"]').value)
-  })).filter((p) => p.name);
+// =====================================================================
+// المنتجات
+// =====================================================================
+async function loadProducts() {
+  try {
+    const snap = await getDocs(query(collection(db, "products"), orderBy("name")));
+    products = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.error(err);
+    $("#admin-products").innerHTML = `<p class="error">${esc(errText(err))}</p>`;
+    return false;
+  }
+  productsById = new Map(products.map((p) => [p.id, p]));
+  renderProducts();
+  fillLists();
+  refreshItemSelects();
+  return true;
+}
+
+function renderProducts() {
+  const q = normTitle($("#products-search").value);
+  const list = q ? products.filter((p) => normTitle(`${p.name} ${p.company}`).includes(q)) : products;
+  $("#products-count").textContent = products.length;
+  $("#admin-products").innerHTML = list.length ? list.map((p) => `
+    <div class="admin-item">
+      ${safeImage(p.image) ? `<img class="thumb" src="${esc(safeImage(p.image))}" alt="" loading="lazy">` : `<div class="thumb"></div>`}
+      <div class="info"><b>${esc(p.name)}</b><small>${esc(p.company)}${p.category ? " · " + esc(p.category) : ""} · ${money(p.publicPrice)}</small></div>
+      <button class="btn btn-sm btn-ghost" data-pedit="${esc(p.id)}">تعديل</button>
+      <button class="btn btn-sm btn-red" data-pdel="${esc(p.id)}">مسح</button>
+    </div>`).join("") : `<p class="state-msg">${products.length ? "مفيش نتايج" : "مفيش منتجات لسه"}</p>`;
+}
+$("#products-search").addEventListener("input", renderProducts);
+
+function setPendingImage(src, info = "") {
+  pendingImage = safeImage(src);
+  $("#p-preview").hidden = !pendingImage;
+  if (pendingImage) $("#p-preview").src = pendingImage; else $("#p-preview").removeAttribute("src");
+  $("#p-clear-img").hidden = !pendingImage;
+  showMsg($("#p-img-info"), info, true);
+  $("#p-img-info").style.color = "";
+}
+
+$("#p-pick").addEventListener("click", () => $("#p-file").click());
+$("#p-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const btn = $("#p-pick");
+  btn.disabled = true; btn.textContent = "جاري تجهيز الصورة…";
+  try {
+    const url = await compressImage(file);
+    $("#p-image-url").value = "";
+    setPendingImage(url, `الصورة اتصغّرت: ${imageKB(url)} KB`);
+  } catch (err) {
+    console.error(err);
+    showMsg($("#p-img-info"), err.message === "not-image" ? "الملف ده مش صورة" : "مقدرناش نجهّز الصورة، جرّبي صورة تانية");
+  } finally {
+    btn.disabled = false; btn.textContent = "📷 اختاري أو صوّري صورة";
+  }
+});
+$("#p-image-url").addEventListener("input", (e) => {
+  const v = e.target.value.trim();
+  setPendingImage(safeUrl(v));
+  if (v && !safeUrl(v)) showMsg($("#p-img-info"), "الرابط لازم يبدأ بـ https://");
+});
+$("#p-clear-img").addEventListener("click", () => { $("#p-image-url").value = ""; setPendingImage(""); });
+
+function resetProductForm() {
+  editingProductId = null;
+  $("#product-form").reset();
+  setPendingImage("");
+  $("#p-form-title").textContent = "منتج جديد";
+  $("#p-save-btn").textContent = "حفظ المنتج";
+  $("#p-cancel-edit").hidden = true;
+}
+$("#p-cancel-edit").addEventListener("click", resetProductForm);
+
+$("#product-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#product-msg");
+  const data = {
+    company: $("#p-company").value.trim(),
+    category: $("#p-category").value.trim(),
+    name: $("#p-name").value.trim().replace(/\s+/g, " "),
+    publicPrice: num($("#p-price").value),
+    image: pendingImage,
+    updatedAt: serverTimestamp()
+  };
+  const dup = products.find((p) => normTitle(p.name) === normTitle(data.name) && p.id !== editingProductId);
+  if (dup) return showMsg(msg, `فيه منتج بنفس الاسم: «${dup.name}»`);
+  const btn = $("#p-save-btn"); btn.disabled = true;
+  try {
+    if (editingProductId) await updateDoc(doc(db, "products", editingProductId), data);
+    else await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
+    showMsg(msg, editingProductId ? "اتعدّل المنتج ✅" : "اتضاف المنتج ✅", true);
+    resetProductForm();
+    await loadProducts();
+  } catch (err) {
+    console.error(err); showMsg(msg, errText(err));
+  } finally { btn.disabled = false; }
+});
+
+$("#admin-products").addEventListener("click", async (e) => {
+  const edit = e.target.closest("[data-pedit]");
+  const del = e.target.closest("[data-pdel]");
+  if (edit) {
+    const p = productsById.get(edit.dataset.pedit);
+    if (!p) return;
+    editingProductId = p.id;
+    $("#p-company").value = p.company || "";
+    $("#p-category").value = p.category || "";
+    $("#p-name").value = p.name || "";
+    $("#p-price").value = p.publicPrice ?? "";
+    const img = safeImage(p.image);
+    $("#p-image-url").value = img && !img.startsWith("data:") ? img : "";
+    setPendingImage(img, img.startsWith("data:") ? `صورة مرفوعة: ${imageKB(img)} KB` : "");
+    $("#p-form-title").textContent = "تعديل المنتج";
+    $("#p-save-btn").textContent = "حفظ التعديل";
+    $("#p-cancel-edit").hidden = false;
+    $("#product-form").scrollIntoView({ behavior: "smooth" });
+  }
+  if (del) {
+    const p = productsById.get(del.dataset.pdel);
+    if (!p) return;
+    const used = offers.filter((o) => (o.products || []).some((it) => it.productId === p.id)).length;
+    const warn = used ? `\nالمنتج ده موجود في ${used} عرض، والعروض هتفضل زي ما هي بس من غير صورته.` : "";
+    if (!confirm(`متأكدة إنك عايزة تمسحي «${p.name}»؟${warn}`)) return;
+    try {
+      await deleteDoc(doc(db, "products", p.id));
+      if (editingProductId === p.id) resetProductForm();
+      await loadProducts();
+    } catch (err) { alert(errText(err)); }
+  }
+});
+
+// ---------- استيراد منتجات من ملف ----------
+$("#import-products-btn").addEventListener("click", () => $("#import-products-file").click());
+$("#import-products-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const show = resultBox($("#import-products-result"));
+  const btn = $("#import-products-btn");
+  let list;
+  try { list = await readJsonList(file, "products"); }
+  catch { return show("الملف مش مظبوط: لازم يكون JSON فيه قائمة منتجات [ ... ]", false); }
+
+  btn.disabled = true;
+  show("جاري الاستيراد…");
+  try {
+    if (!(await loadProducts())) return show("مقدرناش نحمّل المنتجات الحالية، جرّبي تاني", false);
+    const seen = new Set(products.map((p) => normTitle(p.name)));
+    const toAdd = [], dup = [], bad = [];
+    let noImage = 0;
+    for (const raw of list) {
+      const r = mapImportedProduct(raw);
+      if (!r.product) { bad.push(r.name ? `${r.name} (${r.reason})` : r.reason); continue; }
+      const key = normTitle(r.product.name);
+      if (seen.has(key)) { dup.push(r.product.name); continue; }
+      seen.add(key);
+      if (!r.product.image) noImage++;
+      toAdd.push(r.product);
+    }
+    await writeInBatches("products", toAdd, () => ({ createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+    await loadProducts();
+    show(`
+      <div style="color:var(--green)">✅ اتضاف: ${toAdd.length} منتج</div>
+      <div>⏭️ اتخطّى: ${dup.length + bad.length} منتج</div>
+      ${dup.length ? `<div class="meta">موجودين قبل كده: ${dup.map(esc).join("، ")}</div>` : ""}
+      ${bad.length ? `<div class="meta" style="color:var(--red)">بيانات ناقصة: ${bad.map(esc).join("، ")}</div>` : ""}
+      ${noImage ? `<div class="meta">${noImage} منتج من غير صورة (أو الصورة مش رابط صالح)</div>` : ""}`);
+  } catch (err) {
+    console.error(err); show(esc(errText(err)), false);
+  } finally { btn.disabled = false; }
+});
+
+// =====================================================================
+// فورم العرض
+// =====================================================================
+const CUSTOM = "__custom";
+
+function productOptions() {
+  const company = $("#o-company").value.trim();
+  const groups = new Map();
+  for (const p of products) {
+    const c = p.company || "بدون شركة";
+    if (!groups.has(c)) groups.set(c, []);
+    groups.get(c).push(p);
+  }
+  // منتجات شركة العرض الأول
+  const names = [...groups.keys()].sort((a, b) =>
+    (b === company) - (a === company) || a.localeCompare(b, "ar"));
+  return `<option value="">— اختاري منتج —</option>` +
+    names.map((c) => `<optgroup label="${esc(c)}">${groups.get(c).map((p) =>
+      `<option value="${esc(p.id)}">${esc(p.name)} — ${money(p.publicPrice)}</option>`).join("")}</optgroup>`).join("") +
+    `<option value="${CUSTOM}">✏️ منتج مش في الكتالوج (اكتبي الاسم)</option>`;
+}
+
+function rowEls(row) {
+  return {
+    select: $('[data-f="productId"]', row),
+    name: $('[data-f="name"]', row),
+    qty: $('[data-f="qty"]', row),
+    publicPrice: $('[data-f="publicPrice"]', row),
+    offerPrice: $('[data-f="offerPrice"]', row),
+    thumb: $("[data-thumb]", row)
+  };
+}
+
+function showThumb(row, src) {
+  const t = rowEls(row).thumb;
+  const s = safeImage(src);
+  t.hidden = !s;
+  if (s) t.src = s; else t.removeAttribute("src");
+}
+
+// لما تختاري منتج: الاسم والسعر والصورة بيتملوا لوحدهم
+function applySelection(row, fillPrice = true) {
+  const r = rowEls(row);
+  const v = r.select.value;
+  r.name.hidden = v !== CUSTOM;
+  r.name.required = v === CUSTOM;
+  if (v && v !== CUSTOM) {
+    const p = productsById.get(v);
+    r.name.value = p.name;
+    if (fillPrice) r.publicPrice.value = num(p.publicPrice);
+    showThumb(row, p.image || row.dataset.image);
+  } else {
+    showThumb(row, v === CUSTOM ? row.dataset.image : "");
+  }
+}
+
+function addItemRow(item = {}) {
+  const row = $("#product-tpl").content.firstElementChild.cloneNode(true);
+  const r = rowEls(row);
+  r.select.innerHTML = productOptions();
+  row.dataset.image = item.image || "";
+  if (item.productId && productsById.has(item.productId)) r.select.value = item.productId;
+  else if (item.name) r.select.value = CUSTOM;
+  r.name.value = item.name || "";
+  if (item.qty !== undefined) r.qty.value = item.qty;
+  if (item.publicPrice !== undefined) r.publicPrice.value = item.publicPrice;
+  if (item.offerPrice !== undefined) r.offerPrice.value = item.offerPrice;
+  applySelection(row, item.publicPrice === undefined);
+
+  r.select.addEventListener("change", () => {
+    row.dataset.image = "";
+    applySelection(row);
+    if (r.select.value === CUSTOM) r.name.focus(); else r.qty.focus();
+    itemsChanged();
+  });
+  $("[data-remove]", row).addEventListener("click", () => {
+    if ($("#products").children.length > 1) row.remove();
+    itemsChanged();
+  });
+  $("#products").appendChild(row);
+  return row;
+}
+
+// إعادة بناء قوائم المنتجات في الصفوف (بعد تحميل المنتجات أو تغيير الشركة) من غير ما نضيّع الاختيار
+function refreshItemSelects() {
+  for (const row of $("#products").children) {
+    const s = rowEls(row).select;
+    const v = s.value;
+    s.innerHTML = productOptions();
+    s.value = v && (v === CUSTOM || productsById.has(v)) ? v : (rowEls(row).name.value ? CUSTOM : "");
+    applySelection(row, false);
+  }
+}
+$("#o-company").addEventListener("change", refreshItemSelects);
+
+function readItems() {
+  return [...$("#products").children].map((row) => {
+    const r = rowEls(row);
+    const id = r.select.value && r.select.value !== CUSTOM ? r.select.value : "";
+    const p = id ? productsById.get(id) : null;
+    return {
+      productId: id,
+      name: p ? p.name : r.name.value.trim(),
+      qty: Math.max(1, num(r.qty.value) || 1),
+      publicPrice: num(r.publicPrice.value),
+      offerPrice: num(r.offerPrice.value),
+      image: p ? p.image : row.dataset.image
+    };
+  }).filter((it) => it.name);
 }
 
 function updateCalc() {
-  const t = calcTotals(readProducts());
+  const t = calcTotals(readItems());
   $("#calc").innerHTML = `
     <div>إجمالي سعر الجمهور: ${money(t.totalPublic)}</div>
     <div>إجمالي سعر العرض: <span style="color:var(--red)">${money(t.totalOffer)}</span></div>
     <div>نسبة الخصم: ${t.discount}%</div>`;
+  return t;
 }
-$("#products").addEventListener("input", updateCalc);
-$("#add-product").addEventListener("click", () => { addProductRow(); updateCalc(); });
+
+// أي تعديل في المنتجات أو الأسعار بإيدك: نحدّث الحساب و«سعر العرض الكلي»
+function itemsChanged() {
+  const t = updateCalc();
+  $("#o-total").value = t.totalOffer > 0 ? Math.round(t.totalOffer * 100) / 100 : "";
+}
+$("#products").addEventListener("input", (e) => { if (e.target.matches("input")) itemsChanged(); });
+
+// كتابة سعر العرض الكلي: يتوزّع على المنتجات بنسبة سعر الجمهور
+$("#o-total").addEventListener("input", () => {
+  const rows = [...$("#products").children].filter((row) => {
+    const r = rowEls(row);
+    return r.select.value && (r.select.value !== CUSTOM || r.name.value.trim());
+  });
+  const items = rows.map((row) => ({ qty: rowEls(row).qty.value, publicPrice: rowEls(row).publicPrice.value }));
+  const units = splitOfferTotal($("#o-total").value, items);
+  rows.forEach((row, i) => { rowEls(row).offerPrice.value = units[i] || ""; });
+  updateCalc();
+});
+
+$("#add-product").addEventListener("click", () => { addItemRow(); updateCalc(); });
 
 function resetForm() {
   editingId = null;
   $("#offer-form").reset();
   $("#products").innerHTML = "";
-  addProductRow();
+  addItemRow();
   updateCalc();
   $("#form-title").textContent = "عرض جديد";
   $("#save-btn").textContent = "حفظ العرض";
@@ -114,27 +453,37 @@ function resetForm() {
 $("#cancel-edit").addEventListener("click", resetForm);
 
 function offerPayload(o) {
-  const products = o.products.map((p) => ({
-    name: String(p.name), qty: Math.max(1, num(p.qty) || 1),
-    publicPrice: num(p.publicPrice), offerPrice: num(p.offerPrice)
-  }));
-  const t = calcTotals(products);
+  const items = o.products.map(offerItem);
+  const t = calcTotals(items);
   return {
     company: o.company.trim(), category: o.category, name: o.name.trim(),
-    imageUrl: safeUrl(o.imageUrl), products,
+    imageUrl: safeUrl(o.imageUrl), products: items,
     totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
     updatedAt: serverTimestamp()
   };
 }
 
+// ربط عناصر العرض بالمنتجات اللي بنفس الاسم (عشان تاخد الصورة)
+function linkItems(items) {
+  const byName = new Map(products.map((p) => [normTitle(p.name), p]));
+  let linked = 0;
+  const out = items.map((it) => {
+    const p = it.productId ? productsById.get(it.productId) : byName.get(normTitle(it.name));
+    if (!p) return it;
+    linked++;
+    return { ...it, productId: p.id, image: p.image };
+  });
+  return { items: out, linked };
+}
+
 $("#offer-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const msg = $("#offer-msg");
-  const products = readProducts();
-  if (!products.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
+  const items = readItems();
+  if (!items.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
   const data = offerPayload({
     company: $("#o-company").value, category: $("#o-category").value,
-    name: $("#o-name").value, imageUrl: $("#o-image").value, products
+    name: $("#o-name").value, imageUrl: $("#o-image").value, products: items
   });
   const btn = $("#save-btn"); btn.disabled = true;
   try {
@@ -182,7 +531,7 @@ $("#push-btn").addEventListener("click", () => {
   if (!pushText) return;
   const text = `${pushText.title}\n${pushText.message}`;
   // ننسخ الأول (لسه الصفحة عليها الفوكس) وبعدين نفتح OneSignal
-  let copied = copyFallback(text);
+  const copied = copyFallback(text);
   if (!copied && navigator.clipboard) navigator.clipboard.writeText(text).then(() => {}, () => {});
   window.open(ONESIGNAL_NEW_PUSH, "_blank", "noopener");
   showMsg($("#push-msg"), copied
@@ -192,23 +541,21 @@ $("#push-btn").addEventListener("click", () => {
 
 // ---------- قائمة العروض ----------
 async function loadOffers() {
-  const box = $("#admin-offers");
   try {
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
     offers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   } catch (err) {
-    console.error(err); box.innerHTML = `<p class="error">${esc(errText(err))}</p>`; return false;
+    console.error(err);
+    $("#admin-offers").innerHTML = `<p class="error">${esc(errText(err))}</p>`;
+    return false;
   }
   renderAdminList();
   return true;
 }
 
 function renderAdminList() {
-  const box = $("#admin-offers");
-  fillCategories();
-  const names = [...new Set(offers.map((o) => o.company).filter(Boolean))];
-  $("#companies").innerHTML = names.map((n) => `<option value="${esc(n)}">`).join("");
-  box.innerHTML = offers.length ? offers.map((o) => {
+  fillLists();
+  $("#admin-offers").innerHTML = offers.length ? offers.map((o) => {
     const t = calcTotals(o.products);
     return `<div class="admin-item">
       <div class="info"><b>${esc(o.name)}</b><small>${esc(o.company)} · ${esc(o.category)} · ${money(t.totalOffer)} (خصم ${t.discount}%)</small></div>
@@ -226,12 +573,12 @@ $("#admin-offers").addEventListener("click", async (e) => {
     if (!o) return;
     editingId = o.id;
     $("#o-company").value = o.company || "";
-    fillCategories(o.category || "");
+    setCategory(o.category || "");
     $("#o-name").value = o.name || "";
     $("#o-image").value = o.imageUrl || "";
     $("#products").innerHTML = "";
-    (o.products?.length ? o.products : [{}]).forEach(addProductRow);
-    updateCalc();
+    (o.products?.length ? o.products : [{}]).forEach(addItemRow);
+    itemsChanged();
     $("#form-title").textContent = "تعديل العرض";
     $("#save-btn").textContent = "حفظ التعديل";
     $("#cancel-edit").hidden = false;
@@ -248,7 +595,7 @@ $("#admin-offers").addEventListener("click", async (e) => {
 $("#sample-btn").addEventListener("click", async (e) => {
   const btn = e.currentTarget; btn.disabled = true;
   try {
-    const data = offerPayload(SAMPLE_OFFER);
+    const data = offerPayload({ ...SAMPLE_OFFER, products: linkItems(SAMPLE_OFFER.products).items });
     await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
     showPushPanel(data);
     loadOffers();
@@ -256,38 +603,28 @@ $("#sample-btn").addEventListener("click", async (e) => {
   finally { btn.disabled = false; }
 });
 
-// ---------- استيراد عروض من ملف JSON ----------
+// ---------- استيراد عروض من ملف ----------
 $("#import-btn").addEventListener("click", () => $("#import-file").click());
-
 $("#import-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   e.target.value = ""; // عشان نقدر نختار نفس الملف تاني
   if (!file) return;
-  const box = $("#import-result");
+  const show = resultBox($("#import-result"));
   const btn = $("#import-btn");
-  const show = (html, ok = true) => {
-    box.hidden = false; box.innerHTML = html;
-    box.style.background = ok ? "" : "#fde8ec";
-  };
-
   let list;
-  try {
-    const text = (await file.text()).replace(/^﻿/, "");
-    const parsed = JSON.parse(text);
-    list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.offers) ? parsed.offers : null;
-    if (!list) throw new Error("not-array");
-  } catch {
-    return show("الملف مش مظبوط: لازم يكون JSON فيه قائمة عروض [ ... ]", false);
-  }
+  try { list = await readJsonList(file, "offers"); }
+  catch { return show("الملف مش مظبوط: لازم يكون JSON فيه قائمة عروض [ ... ]", false); }
 
   btn.disabled = true;
   show("جاري الاستيراد…");
   try {
-    // نتأكد إن القائمة محدّثة قبل ما نقارن الأسامي، ولو فشلت منكمّلش عشان منكرّرش عروض
-    if (!(await loadOffers())) return show("مقدرناش نحمّل العروض الحالية، جرّبي تاني", false);
+    // نتأكد إن القوائم محدّثة قبل ما نقارن الأسامي، ولو فشلت منكمّلش عشان منكرّرش عروض
+    if (!(await loadProducts()) || !(await loadOffers())) {
+      return show("مقدرناش نحمّل البيانات الحالية، جرّبي تاني", false);
+    }
     const seen = new Set(offers.map((o) => normTitle(o.name)));
     const toAdd = [], dup = [], bad = [];
-    let mismatch = 0;
+    let mismatch = 0, linked = 0, totalItems = 0;
     for (const raw of list) {
       const r = mapImportedOffer(raw);
       if (!r.offer) { bad.push(r.name ? `${r.name} (${r.reason})` : r.reason); continue; }
@@ -295,28 +632,24 @@ $("#import-file").addEventListener("change", async (e) => {
       if (seen.has(key)) { dup.push(r.offer.name); continue; }
       seen.add(key);
       if (r.mismatch) mismatch++;
-      toAdd.push(r.offer);
+      const l = linkItems(r.offer.products);
+      linked += l.linked; totalItems += l.items.length;
+      toAdd.push({ ...r.offer, products: l.items.map(offerItem) });
     }
 
     // أول عرض في الملف يظهر الأول (الأحدث)
     const now = Date.now();
-    for (let i = 0; i < toAdd.length; i += 400) {
-      const batch = writeBatch(db);
-      toAdd.slice(i, i + 400).forEach((o, j) => {
-        batch.set(doc(collection(db, "offers")), {
-          ...o,
-          createdAt: Timestamp.fromMillis(now - (i + j)),
-          updatedAt: serverTimestamp()
-        });
-      });
-      await batch.commit();
-    }
+    await writeInBatches("offers", toAdd, (i) => ({
+      createdAt: Timestamp.fromMillis(now - i),
+      updatedAt: serverTimestamp()
+    }));
     await loadOffers();
 
     const newCats = [...new Set(toAdd.map((o) => o.category))];
     show(`
       <div style="color:var(--green)">✅ اتضاف: ${toAdd.length} عرض</div>
       <div>⏭️ اتخطّى: ${dup.length + bad.length} عرض</div>
+      ${totalItems ? `<div class="meta">🔗 اتربط ${linked} من ${totalItems} منتج بالكتالوج (وخدوا الصور)</div>` : ""}
       ${dup.length ? `<div class="meta">موجودين قبل كده: ${dup.map(esc).join("، ")}</div>` : ""}
       ${bad.length ? `<div class="meta" style="color:var(--red)">بيانات ناقصة: ${bad.map(esc).join("، ")}</div>` : ""}
       ${newCats.length ? `<div class="meta">الأقسام: ${newCats.map(esc).join("، ")}</div>` : ""}
@@ -329,7 +662,9 @@ $("#import-file").addEventListener("change", async (e) => {
   }
 });
 
-// ---------- مانجر مروة ----------
+// =====================================================================
+// مانجر مروة
+// =====================================================================
 const lines = (v) => v.split("\n").map((s) => s.trim()).filter(Boolean);
 
 async function loadAbout() {
@@ -364,4 +699,5 @@ $("#about-form").addEventListener("submit", async (e) => {
   finally { btn.disabled = false; }
 });
 
+fillLists();
 resetForm();

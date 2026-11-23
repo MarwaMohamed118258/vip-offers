@@ -31,6 +31,33 @@ export function safeUrl(u) {
   } catch { return ""; }
 }
 
+// صورة المنتج: رابط http/https أو data URL لصورة (أقصى حجم ~700KB عشان حد Firestore)
+const DATA_IMG = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+export function safeImage(v) {
+  const s = String(v || "").trim();
+  if (s.startsWith("data:")) return s.length <= 700000 && DATA_IMG.test(s) ? s : "";
+  return safeUrl(s);
+}
+
+// توزيع سعر العرض الكلي على المنتجات بنسبة سعر الجمهور.
+// بيرجّع سعر الوحدة لكل منتج (جنيهات صحيحة)، وآخر منتج بيتعدّل عشان المجموع يطلع بالظبط.
+export function splitOfferTotal(total, items) {
+  const T = Math.round(num(total));
+  const qty = items.map((it) => Math.max(1, num(it.qty) || 1));
+  const lines = items.map((it, i) => qty[i] * Math.max(0, num(it.publicPrice)));
+  const sumPub = lines.reduce((a, b) => a + b, 0);
+  if (!items.length || T <= 0) return items.map(() => 0);
+  const share = (i) => sumPub > 0 ? T * lines[i] / sumPub : T * qty[i] / qty.reduce((a, b) => a + b, 0);
+  // المنتج اللي بيتعدّل: آخر منتج كميته 1 (عشان يفضل رقم صحيح)، وإلا آخر منتج
+  let adj = -1;
+  for (let i = items.length - 1; i >= 0; i--) if (qty[i] === 1) { adj = i; break; }
+  if (adj === -1) adj = items.length - 1;
+  const units = items.map((_, i) => i === adj ? 0 : Math.round(share(i) / qty[i]));
+  const rest = T - units.reduce((s, u, i) => s + u * qty[i], 0);
+  units[adj] = Math.round((rest / qty[adj]) * 100) / 100;
+  return units;
+}
+
 export const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -86,6 +113,34 @@ export function mapImportedOffer(raw) {
     },
     mismatch
   };
+}
+
+// منتج من ملف الاستيراد → شكل المنتج في Firestore
+export function mapImportedProduct(raw) {
+  if (!raw || typeof raw !== "object") return { reason: "مش منتج" };
+  const name = String(raw.name ?? "").trim().replace(/\s+/g, " ");
+  const company = String(raw.company ?? "").trim();
+  const category = String(raw.category ?? "").trim();
+  if (!name) return { reason: "من غير اسم" };
+  if (!company) return { reason: "ناقصه الشركة", name };
+  return {
+    product: { company, category, name, publicPrice: num(raw.publicPrice), image: safeImage(raw.image) }
+  };
+}
+
+// شكل عنصر العرض اللي بيتحفظ: لو المنتج من الكتالوج بنحفظ productId،
+// والصورة بتتحفظ في العرض بس لو كانت رابط (الصور المرفوعة بتتجاب من المنتج نفسه عشان العرض يفضل خفيف)
+export function offerItem(p) {
+  const item = {
+    name: String(p.name || "").trim(),
+    qty: Math.max(1, num(p.qty) || 1),
+    publicPrice: num(p.publicPrice),
+    offerPrice: num(p.offerPrice)
+  };
+  if (p.productId) item.productId = String(p.productId);
+  const img = safeImage(p.image);
+  if (img && !img.startsWith("data:")) item.image = img;
+  return item;
 }
 
 export const SAMPLE_OFFER = {

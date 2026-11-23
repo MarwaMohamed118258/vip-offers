@@ -35,7 +35,53 @@
     <section id="admin-view" hidden>
       <div class="admin-tabs">
         <button class="btn btn-purple" data-tab="offers">العروض</button>
+        <button class="btn btn-ghost" data-tab="products">المنتجات</button>
         <button class="btn btn-ghost" data-tab="about">مانجر مروة</button>
+      </div>
+
+      <!-- المنتجات -->
+      <div id="tab-products" hidden>
+        <div class="panel">
+          <h2 class="section-title" id="p-form-title">منتج جديد</h2>
+          <form id="product-form" class="form-grid">
+            <div class="field"><label for="p-company">الشركة</label><input id="p-company" class="input" list="companies" required></div>
+            <div class="field"><label for="p-category">القسم</label><input id="p-category" class="input" list="categories-list" placeholder="مثلاً: شعر"></div>
+            <datalist id="categories-list"></datalist>
+            <div class="field"><label for="p-name">اسم المنتج</label><input id="p-name" class="input" required></div>
+            <div class="field"><label for="p-price">سعر الجمهور</label><input id="p-price" class="input" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+
+            <div class="field">
+              <label>صورة المنتج</label>
+              <div class="img-picker">
+                <img id="p-preview" class="img-preview" alt="" hidden>
+                <div class="form-grid" style="flex:1">
+                  <button type="button" id="p-pick" class="btn btn-ghost">📷 اختاري أو صوّري صورة</button>
+                  <input type="file" id="p-file" accept="image/*" hidden>
+                  <input id="p-image-url" class="input" type="url" dir="ltr" placeholder="أو الصقي رابط صورة https://...">
+                  <button type="button" id="p-clear-img" class="btn btn-sm btn-ghost" hidden>شيلي الصورة</button>
+                </div>
+              </div>
+              <p id="p-img-info" class="meta" style="margin:6px 0 0" hidden></p>
+            </div>
+
+            <div class="row-gap">
+              <button type="submit" class="btn btn-purple" style="flex:1" id="p-save-btn">حفظ المنتج</button>
+              <button type="button" class="btn btn-ghost" id="p-cancel-edit" hidden>إلغاء التعديل</button>
+            </div>
+            <p id="product-msg" class="error" hidden></p>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h2 class="section-title" style="margin:0">المنتجات (<span id="products-count">0</span>)</h2>
+            <button type="button" id="import-products-btn" class="btn btn-sm btn-purple">استيراد منتجات من ملف</button>
+            <input type="file" id="import-products-file" accept=".json,application/json" hidden>
+          </div>
+          <div id="import-products-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
+          <input id="products-search" class="input" type="search" placeholder="ابحثي باسم المنتج أو الشركة" style="margin-bottom:10px">
+          <div id="admin-products" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
       </div>
 
       <!-- العروض -->
@@ -50,8 +96,15 @@
             <div class="field"><label for="o-image">رابط صورة (اختياري)</label><input id="o-image" class="input" type="url" dir="ltr" placeholder="https://..."></div>
 
             <h3 class="section-title" style="margin:8px 0 0">المنتجات</h3>
+            <p class="meta" style="margin:0">اختاري المنتج من القائمة واكتبي الكمية بس. الاسم والسعر والصورة بيتملوا لوحدهم.</p>
             <div id="products" class="form-grid"></div>
             <button type="button" id="add-product" class="btn btn-ghost">+ ضيفي منتج</button>
+
+            <div class="field">
+              <label for="o-total">سعر العرض الكلي</label>
+              <input id="o-total" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="اكتبيه وهيتوزّع على المنتجات">
+              <p class="meta" style="margin:4px 0 0">بيتوزّع بنسبة سعر الجمهور (جنيهات صحيحة)، وتقدري تعدّلي سعر أي منتج بإيدك بعدها.</p>
+            </div>
 
             <div class="calc-box" id="calc"></div>
 
@@ -109,7 +162,14 @@
 
   <template id="product-tpl">
     <div class="product-row">
-      <div class="field"><label>اسم المنتج</label><input class="input" data-f="name" required></div>
+      <div class="pick">
+        <img class="thumb" data-thumb alt="" hidden>
+        <div class="field" style="flex:1">
+          <label>المنتج</label>
+          <select class="select" data-f="productId" required></select>
+          <input class="input" data-f="name" placeholder="اكتبي اسم المنتج" style="margin-top:6px" hidden>
+        </div>
+      </div>
       <div class="nums">
         <div class="field"><label>الكمية</label><input class="input" data-f="qty" type="number" min="1" value="1" inputmode="numeric" required></div>
         <div class="field"><label>سعر الجمهور</label><input class="input" data-f="publicPrice" type="number" min="0" step="0.01" inputmode="decimal" required></div>
