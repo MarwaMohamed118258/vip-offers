@@ -80,14 +80,64 @@ export function money(v) {
 }
 
 // حساب الإجماليات ونسبة الخصم من قائمة المنتجات
+// ---------- سطور العرض ----------
+// السطر ممكن يكون فيه offerTotal / publicTotal = إجمالي السطر بالظبط (لما السعر على الكمية مش رقم صحيح:
+// مثلاً 3 علب بـ 800 → offerPrice 267 للعرض بس، والإجمالي 800 زي ما هو)
+const round2 = (v) => Math.round(v * 100) / 100;
+export const lineQty = (p) => Math.max(1, num(p?.qty) || 1);
+export const lineOffer = (p) => (num(p?.offerTotal) > 0 ? num(p.offerTotal) : lineQty(p) * num(p?.offerPrice));
+export const linePublic = (p) => (num(p?.publicTotal) > 0 ? num(p.publicTotal) : lineQty(p) * num(p?.publicPrice));
+// نفس المنتج = نفس الاسم
+export const itemKey = (p) => normTitle(p?.name);
+// عدد المنتجات المختلفة في العرض (مش عدد السطور)
+export const distinctProducts = (items) => new Set((items || []).filter((p) => p && String(p.name || "").trim()).map(itemKey)).size;
+
+// السعر للوحدة + الإجمالي الدقيق لو القسمة مش رقم صحيح
+function unitAndTotal(total, qty, priceKey, totalKey) {
+  const t = round2(total), unit = t / qty;
+  return Number.isInteger(unit) || round2(unit) * qty === t
+    ? { [priceKey]: Number.isInteger(unit) ? unit : round2(unit) }
+    : { [priceKey]: Math.round(unit), [totalKey]: t };
+}
+
+// دمج السطور المكررة لنفس المنتج في سطر واحد بالكمية الكلية (إجمالي العرض بيفضل زي ما هو بالظبط)
+export function mergeItems(items) {
+  const groups = new Map();
+  for (const p of items || []) {
+    if (!p) continue;
+    const k = String(p.name || "").trim() ? itemKey(p) : Symbol("blank");
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(p);
+  }
+  return [...groups.values()].map((g) => {
+    if (g.length === 1) return g[0];
+    const qty = g.reduce((s, p) => s + lineQty(p), 0);
+    const merged = { ...g[0] };
+    delete merged.offerTotal; delete merged.publicTotal;
+    merged.productId = g.find((p) => p.productId)?.productId || merged.productId;
+    if (!merged.productId) delete merged.productId;
+    merged.image = merged.image || g.find((p) => p.image)?.image;
+    if (!merged.image) delete merged.image;
+    merged.nameEn = merged.nameEn || g.find((p) => p.nameEn)?.nameEn;
+    if (!merged.nameEn) delete merged.nameEn;
+    merged.qty = qty;
+    Object.assign(merged,
+      unitAndTotal(g.reduce((s, p) => s + linePublic(p), 0), qty, "publicPrice", "publicTotal"),
+      unitAndTotal(g.reduce((s, p) => s + lineOffer(p), 0), qty, "offerPrice", "offerTotal"));
+    return merged;
+  });
+}
+export const hasDuplicateLines = (items) => mergeItems(items).length < (items || []).filter(Boolean).length;
+
 export function calcTotals(products) {
   let totalPublic = 0, totalOffer = 0, items = 0;
   for (const p of products || []) {
-    const q = Math.max(1, num(p.qty) || 1);
-    totalPublic += q * num(p.publicPrice);
-    totalOffer += q * num(p.offerPrice);
-    items += q;
+    if (!p) continue;
+    totalPublic += linePublic(p);
+    totalOffer += lineOffer(p);
+    items += lineQty(p);
   }
+  totalPublic = round2(totalPublic); totalOffer = round2(totalOffer);
   const discount = totalPublic > 0 ? Math.round((1 - totalOffer / totalPublic) * 100) : 0;
   return { totalPublic, totalOffer, discount, items };
 }
@@ -100,14 +150,14 @@ export function mapImportedOffer(raw) {
   const category = String(raw.category ?? "").trim();
   const name = String(raw.title ?? raw.name ?? "").trim().replace(/\s+/g, " ");
   const items = Array.isArray(raw.items) ? raw.items : Array.isArray(raw.products) ? raw.products : [];
-  const products = items
+  const products = mergeItems(items
     .filter((p) => p && String(p.name ?? "").trim())
     .map((p) => ({
       name: String(p.name).trim(),
       qty: Math.max(1, num(p.qty) || 1),
       publicPrice: num(p.publicPrice),
       offerPrice: num(p.offerPrice)
-    }));
+    })));
   if (!name) return { reason: "من غير اسم" };
   if (!company || !category) return { reason: "ناقصه الشركة أو القسم", name };
   if (!products.length) return { reason: "من غير منتجات", name };
@@ -195,6 +245,8 @@ export function offerItem(p) {
     offerPrice: num(p.offerPrice)
   };
   if (p.productId) item.productId = String(p.productId);
+  if (num(p.offerTotal) > 0) item.offerTotal = num(p.offerTotal);
+  if (num(p.publicTotal) > 0) item.publicTotal = num(p.publicTotal);
   const nameEn = typeof p.nameEn === "string" ? p.nameEn.trim() : "";
   if (nameEn) item.nameEn = nameEn;
   const img = safeImage(p.image);

@@ -2,7 +2,7 @@ import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
 import {
   allCategories, esc, safeUrl, safeImage, num, calcTotals, offerStatus, normTitle,
   monthKey, levelInfo, sortLevels, ratingsIndex, MIN_RATINGS,
-  aboutField, aboutBodyHtml, SUGGESTION_TYPES, SUGGESTION_OTHER, SUGGESTION_MAX
+  aboutField, aboutBodyHtml, mergeItems, distinctProducts, lineQty, lineOffer, linePublic, SUGGESTION_TYPES, SUGGESTION_OTHER, SUGGESTION_MAX
 } from "./utils.js";
 import {
   getCart, addToCart, setQty, removeFromCart, clearCart, cartCount,
@@ -83,9 +83,12 @@ const itemName = (it) => (isEn() && productNameEn(it)) || it.name || "";
 const visibleOffers = () => state.offers.filter((o) => !offerStatus(o).expired);
 const findAvailable = (id) => visibleOffers().find((o) => o.id === id) || null;
 
+// السطور المكررة لنفس المنتج (2 × 267 + 1 × 266) بتتعرض سطر واحد بالكمية الكلية
+const normalizeOffer = (o) => ({ ...o, products: mergeItems(o.products) });
+
 async function loadOffers() {
   const cached = readJSON(CACHE_KEY, null);
-  if (Array.isArray(cached)) { state.offers = cached; state.loaded = true; rerender(); }
+  if (Array.isArray(cached)) { state.offers = cached.map(normalizeOffer); state.loaded = true; rerender(); }
   try {
     const { db, collection, getDocs, query, orderBy } = await firestore();
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
@@ -94,7 +97,7 @@ async function loadOffers() {
     if (snap.metadata.fromCache) throw new Error("offline");
     state.offers = snap.docs.map((d) => {
       const data = d.data();
-      return { id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() || 0, updatedAt: undefined };
+      return normalizeOffer({ id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() || 0, updatedAt: undefined });
     });
     state.loaded = true;
     state.fresh = true;
@@ -363,8 +366,8 @@ function offerCard(o) {
   </article>`;
 }
 
-// عرض منتج واحد = فيه منتج واحد بس (بأي كمية)، ومجموعة مشكّلة = فيه منتجين أو أكتر
-const offerKind = (o) => ((o.products || []).filter((p) => p && p.name).length >= 2 ? "bundle" : "single");
+// عرض منتج واحد = كل سطوره نفس المنتج (بأي كمية وأي عدد سطور)، ومجموعة مشكّلة = منتجين مختلفين أو أكتر
+const offerKind = (o) => (distinctProducts(o.products) >= 2 ? "bundle" : "single");
 
 function renderKindTabs(counts) {
   $("#kind-tabs").setAttribute("aria-label", t("kindTabs"));
@@ -427,12 +430,14 @@ function renderOffer(id) {
   $("#d-company").textContent = `${companyName(o.company)} · ${categoryName(o.category)}`;
 
   const rows = (o.products || []).map((p) => {
-    const q = Math.max(1, num(p.qty) || 1);
+    const q = lineQty(p);
+    // سعر العلبة = إجمالي السطر ÷ الكمية لأقرب جنيه (الإجمالي نفسه بيفضل مظبوط)
+    const unit = q > 1 ? `<small class="unit-price">${esc(t("perUnit", { x: money(Math.round(lineOffer(p) / q)) }))}</small>` : "";
     return `<tr>
-      <td><div class="item-cell">${itemImage(p) ? lazyImg(itemImage(p), "", "", 44) : ""}<span>${esc(itemName(p))}</span></div></td>
+      <td><div class="item-cell">${itemImage(p) ? lazyImg(itemImage(p), "", "", 44) : ""}<span>${esc(itemName(p))}${unit}</span></div></td>
       <td class="num">${q}</td>
-      <td class="num old">${money(num(p.publicPrice) * q)}</td>
-      <td class="num new">${money(num(p.offerPrice) * q)}</td>
+      <td class="num old">${money(linePublic(p))}</td>
+      <td class="num new">${money(lineOffer(p))}</td>
     </tr>`;
   }).join("");
 

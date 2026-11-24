@@ -2,7 +2,7 @@ import { isFirebaseConfigured } from "./firebase-config.js";
 import {
   allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
   SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory, planEnglishNames,
-  aboutField
+  aboutField, mergeItems, hasDuplicateLines
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 import { initAdminExtras, onAdminTab } from "./admin-extra.js";
@@ -467,6 +467,23 @@ function productOptions() {
     `<option value="${CUSTOM}">✏️ منتج مش في الكتالوج (اكتبي الاسم)</option>`;
 }
 
+// الإجمالي الدقيق للسطر (offerTotal / publicTotal) بيفضل محفوظ طول ما الكمية والسعر المعروض متغيّروش
+function setExactTotals(row, item = {}) {
+  const q = Math.max(1, num(item.qty) || 1);
+  row.dataset.exactQty = q;
+  row.dataset.offerTotal = num(item.offerTotal) > 0 ? num(item.offerTotal) : "";
+  row.dataset.offerUnit = num(item.offerTotal) > 0 ? num(item.offerPrice) : "";
+  row.dataset.publicTotal = num(item.publicTotal) > 0 ? num(item.publicTotal) : "";
+  row.dataset.publicUnit = num(item.publicTotal) > 0 ? num(item.publicPrice) : "";
+}
+function exactTotals(row, qty, publicPrice, offerPrice) {
+  const d = row.dataset, out = {};
+  if (Number(d.exactQty) !== qty) return out;
+  if (d.offerTotal && Number(d.offerUnit) === offerPrice) out.offerTotal = Number(d.offerTotal);
+  if (d.publicTotal && Number(d.publicUnit) === publicPrice) out.publicTotal = Number(d.publicTotal);
+  return out;
+}
+
 function rowEls(row) {
   return {
     select: $('[data-f="productId"]', row),
@@ -507,6 +524,7 @@ function addItemRow(item = {}) {
   r.select.innerHTML = productOptions();
   row.dataset.image = item.image || "";
   row.dataset.nameEn = item.nameEn || "";
+  setExactTotals(row, item);
   if (item.productId && productsById.has(item.productId)) r.select.value = item.productId;
   else if (item.name) r.select.value = CUSTOM;
   r.name.value = item.name || "";
@@ -546,12 +564,13 @@ function readItems() {
     const r = rowEls(row);
     const id = r.select.value && r.select.value !== CUSTOM ? r.select.value : "";
     const p = id ? productsById.get(id) : null;
+    const qty = Math.max(1, num(r.qty.value) || 1);
+    const publicPrice = num(r.publicPrice.value), offerPrice = num(r.offerPrice.value);
     return {
       productId: id,
       name: p ? p.name : r.name.value.trim(),
-      qty: Math.max(1, num(r.qty.value) || 1),
-      publicPrice: num(r.publicPrice.value),
-      offerPrice: num(r.offerPrice.value),
+      qty, publicPrice, offerPrice,
+      ...exactTotals(row, qty, publicPrice, offerPrice),
       image: p ? p.image : row.dataset.image,
       nameEn: p ? p.nameEn || "" : row.dataset.nameEn || ""
     };
@@ -582,7 +601,19 @@ $("#o-total").addEventListener("input", () => {
   });
   const items = rows.map((row) => ({ qty: rowEls(row).qty.value, publicPrice: rowEls(row).publicPrice.value }));
   const units = splitOfferTotal($("#o-total").value, items);
-  rows.forEach((row, i) => { rowEls(row).offerPrice.value = units[i] || ""; });
+  const T = Math.round(num($("#o-total").value));
+  const qtys = items.map((it) => Math.max(1, num(it.qty) || 1));
+  rows.forEach((row, i) => {
+    const r = rowEls(row);
+    const pub = { qty: qtys[i], publicTotal: row.dataset.publicTotal && Number(row.dataset.exactQty) === qtys[i] && Number(row.dataset.publicUnit) === num(r.publicPrice.value) ? row.dataset.publicTotal : "", publicPrice: num(r.publicPrice.value) };
+    if (!units[i]) { r.offerPrice.value = ""; setExactTotals(row, pub); return; }
+    if (Number.isInteger(units[i])) { r.offerPrice.value = units[i]; setExactTotals(row, pub); return; }
+    // السطر اللي اتعدّل عشان المجموع يطلع مظبوط: إجماليه = الكلي − باقي السطور
+    const line = T - units.reduce((sum, u, j) => j === i ? sum : sum + u * qtys[j], 0);
+    const shown = Math.round(line / qtys[i]);
+    r.offerPrice.value = shown;
+    setExactTotals(row, { ...pub, offerPrice: shown, offerTotal: line });
+  });
   updateCalc();
 });
 
@@ -602,7 +633,7 @@ function resetForm() {
 $("#cancel-edit").addEventListener("click", resetForm);
 
 function offerPayload(o) {
-  const items = o.products.map(offerItem);
+  const items = mergeItems(o.products.map(offerItem));
   const t = calcTotals(items);
   return {
     company: o.company.trim(), category: o.category, name: o.name.trim(),
@@ -751,6 +782,52 @@ $("#push-btn").addEventListener("click", () => {
 });
 
 // ---------- قائمة العروض ----------
+// =====================================================================
+// إصلاح لمرة واحدة: عروض فيها نفس المنتج في أكتر من سطر (2 × 267 + 1 × 266)
+// → سطر واحد بالكمية الكلية، وإجمالي العرض بيفضل زي ما هو بالظبط
+// =====================================================================
+let mergeDone = null;
+function renderMergeBox() {
+  const dups = offers.filter((o) => hasDuplicateLines(o.products));
+  const box = $("#merge-box");
+  box.hidden = !dups.length && mergeDone === null;
+  if (mergeDone !== null && !dups.length) {
+    $("#merge-text").innerHTML = `<span style="color:var(--green)">✅ اتصلّح ${mergeDone} عرض: كل منتج بقى في سطر واحد بالكمية الكلية، والإجمالي زي ما هو.</span>`;
+    $("#merge-btn").hidden = true;
+    return;
+  }
+  $("#merge-text").innerHTML = `فيه ${dups.length} عرض فيهم نفس المنتج متكرر في أكتر من سطر (${dups.slice(0, 4).map((o) => esc(o.name)).join("، ")}${dups.length > 4 ? "…" : ""}). اضغطي عشان يتدمجوا في سطر واحد بالكمية الكلية (الإجمالي مش هيتغيّر).`;
+  $("#merge-btn").hidden = false;
+}
+$("#merge-btn").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  const dups = offers.filter((o) => hasDuplicateLines(o.products));
+  if (!dups.length) return;
+  btn.disabled = true;
+  try {
+    const batch = writeBatch(db);
+    for (const o of dups) {
+      const merged = mergeItems(o.products);
+      const before = calcTotals(o.products), after = calcTotals(merged);
+      // أمان: لو الإجمالي هيتغيّر ولو قرش، منلمسش العرض ده
+      if (before.totalOffer !== after.totalOffer || before.totalPublic !== after.totalPublic || before.items !== after.items) {
+        throw new Error("totals-changed: " + o.name);
+      }
+      batch.update(doc(db, "offers", o.id), {
+        products: merged,
+        totalPublic: after.totalPublic, totalOffer: after.totalOffer, discount: after.discount, itemsCount: after.items,
+        updatedAt: serverTimestamp()
+      });
+    }
+    await batch.commit();
+    mergeDone = dups.length;
+  } catch (err) {
+    console.error(err);
+    alert(String(err.message).startsWith("totals-changed") ? "وقفت: عرض كان إجماليه هيتغيّر. محصلش أي تعديل." : errText(err));
+  } finally { btn.disabled = false; }
+  await loadOffers();
+});
+
 async function loadOffers() {
   try {
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
@@ -766,6 +843,7 @@ async function loadOffers() {
 
 function renderAdminList() {
   fillLists();
+  renderMergeBox();
   $("#admin-offers").innerHTML = offers.length ? offers.map((o) => {
     const t = calcTotals(o.products);
     const st = offerStatus(o);
@@ -796,7 +874,7 @@ $("#admin-offers").addEventListener("click", async (e) => {
     $("#o-image").value = o.imageUrl || "";
     $("#o-end").value = isDateStr(o.endDate) ? o.endDate : "";
     $("#products").innerHTML = "";
-    (o.products?.length ? o.products : [{}]).forEach(addItemRow);
+    (o.products?.length ? mergeItems(o.products) : [{}]).forEach(addItemRow);
     itemsChanged();
     $("#form-title").textContent = "تعديل العرض";
     $("#save-btn").textContent = "حفظ التعديل";
