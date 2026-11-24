@@ -4,6 +4,7 @@ import {
   SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory, planEnglishNames
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
+import { initAdminExtras, onAdminTab } from "./admin-extra.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -35,7 +36,7 @@ function showMsg(el, text, ok = false) {
 }
 
 function errText(e) {
-  if (e?.code === "permission-denied") return "مفيش صلاحية. اتأكدي إن حسابك متضاف في مجموعة admins وإن قواعد Firestore متحدّثة.";
+  if (e?.code === "permission-denied") return "مفيش صلاحية. لازم تكوني داخلة بحساب الأدمن.";
   if (e?.code?.startsWith("auth/")) return "الإيميل أو الباسورد غلط";
   if (e?.code === "invalid-argument") return "البيانات كبيرة أو فيها مشكلة، جرّبي صورة أصغر";
   return "حصلت مشكلة، جرّبي تاني";
@@ -101,7 +102,8 @@ $("#logout").addEventListener("click", () => signOut(auth));
 // ---------- التبويبات ----------
 $$("[data-tab]").forEach((b) => b.addEventListener("click", () => {
   $$("[data-tab]").forEach((x) => x.className = "btn " + (x === b ? "btn-purple" : "btn-ghost"));
-  for (const t of ["offers", "products", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
+  for (const t of ["offers", "products", "orders", "rewards", "stats", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
+  onAdminTab(b.dataset.tab);
 }));
 
 // ---------- قوائم مشتركة (الشركات والأقسام) ----------
@@ -917,3 +919,4 @@ $("#about-form").addEventListener("submit", async (e) => {
 
 fillLists();
 resetForm();
+initAdminExtras({ getOffers: () => offers, getProducts: () => products });

@@ -2,34 +2,86 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // الأدمن = أي مستخدم ليه مستند في admins/{uid}
+    // الأدمن = حساب الإيميل ده بس (تسجيل الدخول من admin.html)
     function isAdmin() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+        && request.auth.token.email == "m.marwa.mohamed2013@gmail.com";
     }
 
-    // العروض: الكل يقرأ، الأدمن بس يكتب
+    function isStr(v, minLen, maxLen) { return v is string && v.size() >= minLen && v.size() <= maxLen; }
+    function isNum(v, lo, hi) { return (v is int || v is float) && v >= lo && v <= hi; }
+
+    // ---------- عام: الكل يقرأ، الأدمن بس يكتب ----------
     match /offers/{offerId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
-    // كتالوج المنتجات: الكل يقرأ (عشان صور المنتجات تظهر في العروض)، الأدمن بس يكتب
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
-    // إعدادات الصفحات (settings/about): الكل يقرأ، الأدمن بس يكتب
+    // settings: about / categories / names / loyalty (المستويات) / bestsellers
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // قائمة الأدمن: محدش يعدّلها من التطبيق (بتتضاف من Firebase Console)
-    match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
+    // ---------- الطلبات: أي عميل يبعت طلب جديد، والأدمن بس يشوف ويعدّل ----------
+    function validOrder(d) {
+      return d.keys().hasAll(["customerId", "name", "area", "phone", "items", "total", "status", "createdAt"])
+        && d.keys().hasOnly(["customerId", "name", "area", "phone", "items", "total", "totalPublic", "itemsCount", "status", "createdAt", "lang"])
+        && d.customerId is string && d.customerId.matches("^[A-Za-z0-9]{24,64}$")
+        && isStr(d.name, 1, 100)
+        && isStr(d.area, 1, 100)
+        && d.phone is string && d.phone.matches("^[+0-9 ]{8,20}$")
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 50
+        && isNum(d.total, 0, 100000000)
+        && (!("totalPublic" in d) || isNum(d.totalPublic, 0, 100000000))
+        && (!("itemsCount" in d) || isNum(d.itemsCount, 0, 100000))
+        && (!("lang" in d) || d.lang in ["ar", "en"])
+        && d.status == "جديد"
+        && d.createdAt == request.time;
+    }
+    match /orders/{orderId} {
+      allow create: if validOrder(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---------- المكافآت: العميل يقرأ مستنده بالكود بتاعه بس (get مش list)، والأدمن بيحدّثه ----------
+    match /loyalty/{customerId} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+    }
+
+    // ---------- التقييمات ----------
+    // rateable/{orderId}_{productKey}: الأدمن بيعمله لما الطلب يبقى «اتسلّم» = إذن بتقييم واحد
+    match /rateable/{id} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+    }
+    // التقييم: مرة واحدة بس لكل منتج في طلب اتسلّم (نفس الـ ID بتاع rateable)، ومن غير تعديل
+    match /ratings/{id} {
+      allow read: if true;
+      allow create: if exists(/databases/$(database)/documents/rateable/$(id))
+        && request.resource.data.keys().hasAll(["orderId", "productKey", "stars", "createdAt"])
+        && request.resource.data.keys().hasOnly(["orderId", "productKey", "productId", "productName", "stars", "comment", "commentHidden", "createdAt"])
+        && id == request.resource.data.orderId + "_" + request.resource.data.productKey
+        && request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && (!("comment" in request.resource.data) || isStr(request.resource.data.comment, 0, 500))
+        && (!("productName" in request.resource.data) || isStr(request.resource.data.productName, 0, 200))
+        && (!("productId" in request.resource.data) || isStr(request.resource.data.productId, 0, 64))
+        && (!("commentHidden" in request.resource.data) || request.resource.data.commentHidden == false)
+        && request.resource.data.createdAt == request.time;
+      // الأدمن يقدر يخبّي التعليق بس (النجوم بتفضل محسوبة)، أو يمسح التقييم
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["commentHidden"]);
+      allow delete: if isAdmin();
+    }
+
+    // ---------- عدّاد مشاهدات العروض: زيادة 1 بس كل مرة، والأدمن بس يقرأ ----------
+    match /views/{offerId} {
+      allow create: if request.resource.data.keys().hasOnly(["count"]) && request.resource.data.count == 1;
+      allow update: if request.resource.data.keys().hasOnly(["count"]) && request.resource.data.count == resource.data.count + 1;
+      allow read, delete: if isAdmin();
     }
   }
 }

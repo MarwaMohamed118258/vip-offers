@@ -30,6 +30,7 @@
     <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></symbol>
     <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
   </svg>
 
@@ -70,6 +71,7 @@
         </div>
       </header>
       <div class="container">
+        <div id="home-alerts"></div>
         <div id="kind-tabs" class="seg" role="tablist"></div>
         <div class="filters">
           <div class="search-wrap">
@@ -144,6 +146,18 @@
       <div class="container" id="cart-body"></div>
     </section>
 
+    <!-- المكافآت -->
+    <section id="view-rewards" class="view">
+      <header class="app-header">
+        <div class="container row">
+          <div class="brand-badge">VIP</div>
+          <div class="grow"><h1 data-i18n="rewardsTitle">برنامج المكافآت</h1><p data-i18n="rewardsSub">كل ما تطلب أكتر، مكافأتك تكبر</p></div>
+          <button type="button" class="lang-btn" data-lang-toggle>EN</button>
+        </div>
+      </header>
+      <div class="container" id="rewards-body"></div>
+    </section>
+
     <!-- الإشعارات -->
     <section id="view-notifications" class="view">
       <header class="app-header">
@@ -177,11 +191,12 @@
   </main>
 
   <nav class="bottom-nav" aria-label="القائمة" data-i18n-aria="navMenu">
-    <a href="#/" data-nav="home"><svg><use href="#i-gift"/></svg><span data-i18n="navOffers">العروض</span></a>
+    <a href="#/" data-nav="home"><svg><use href="#i-tag"/></svg><span data-i18n="navOffers">العروض</span></a>
     <a href="#/products" data-nav="products"><svg><use href="#i-box"/></svg><span data-i18n="navProducts">منتجاتنا</span></a>
     <a href="#/cart" data-nav="cart">
       <span class="nav-icon"><svg><use href="#i-cart"/></svg><span class="nav-badge" id="cart-count" hidden>0</span></span><span data-i18n="navCart">السلة</span>
     </a>
+    <a href="#/rewards" data-nav="rewards"><svg><use href="#i-gift"/></svg><span data-i18n="navRewards">المكافآت</span></a>
     <a href="#/notifications" data-nav="notifications"><svg><use href="#i-bell"/></svg><span data-i18n="navNotif">الإشعارات</span></a>
     <a href="#/about" data-nav="about"><svg><use href="#i-user"/></svg><span data-i18n="navAbout">مانجر مروة</span></a>
   </nav>

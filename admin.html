@@ -36,7 +36,50 @@
       <div class="admin-tabs">
         <button class="btn btn-purple" data-tab="offers">العروض</button>
         <button class="btn btn-ghost" data-tab="products">المنتجات</button>
+        <button class="btn btn-ghost" data-tab="orders">الطلبات</button>
+        <button class="btn btn-ghost" data-tab="rewards">المكافآت</button>
+        <button class="btn btn-ghost" data-tab="stats">الإحصائيات</button>
         <button class="btn btn-ghost" data-tab="about">مانجر مروة</button>
+      </div>
+
+      <!-- الطلبات -->
+      <div id="tab-orders" hidden>
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h2 class="section-title" style="margin:0">الطلبات</h2>
+            <button type="button" id="orders-refresh" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+          </div>
+          <div id="orders-filters" class="chips"></div>
+          <input id="orders-search" class="input" type="search" placeholder="ابحثي باسم الصيدلية أو المنطقة أو الموبايل" style="margin:6px 0 12px">
+          <p class="meta" style="margin:0 0 10px">لما تخلّي الطلب «اتسلّم»: بيتحسب في مكافآت العميل للشهر، وبيتفتح له تقييم المنتجات.</p>
+          <div id="orders-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+      </div>
+
+      <!-- برنامج المكافآت -->
+      <div id="tab-rewards" hidden>
+        <div class="panel">
+          <h2 class="section-title">برنامج المكافآت: المستويات</h2>
+          <p class="meta" style="margin:0 0 12px">العميل بيوصل للمستوى لما مجموع طلباته اللي «اتسلّمت» في الشهر يوصل للهدف. تقدري تعدّلي في أي وقت.</p>
+          <div id="levels-list" class="form-grid"></div>
+          <div class="row-gap" style="margin-top:10px">
+            <button type="button" id="levels-add" class="btn btn-ghost">+ ضيفي مستوى</button>
+            <button type="button" id="levels-save" class="btn btn-purple" style="flex:1">حفظ المستويات</button>
+          </div>
+          <p id="levels-msg" class="error" hidden></p>
+        </div>
+        <div class="panel">
+          <h2 class="section-title">العملاء الشهر ده</h2>
+          <div id="month-customers" class="admin-list"></div>
+        </div>
+      </div>
+
+      <!-- الإحصائيات -->
+      <div id="tab-stats" hidden>
+        <div class="row-gap" style="justify-content:flex-end;margin-top:12px">
+          <button type="button" id="stats-refresh" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+        </div>
+        <div id="stats-body"></div>
       </div>
 
       <!-- المنتجات -->
@@ -102,6 +145,12 @@
           <div id="import-products-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
           <input id="products-search" class="input" type="search" placeholder="ابحثي باسم المنتج أو الشركة" style="margin-bottom:10px">
           <div id="admin-products" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+
+        <div class="panel">
+          <h2 class="section-title">تقييمات العملاء</h2>
+          <p class="meta" style="margin:0 0 10px">تقييمات حقيقية بس من طلبات اتسلّمت. تقدري تخبّي أي تعليق (النجوم بتفضل محسوبة). المتوسط بيظهر للعملاء لما المنتج يوصل 3 تقييمات.</p>
+          <div id="ratings-admin" class="admin-list"><p class="meta">جاري التحميل…</p></div>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 // سلة الطلبات وبيانات الصيدلية وآخر طلب — كله محفوظ في localStorage على جهاز العميل بس
-import { money } from "./utils.js";
+import { money, randomId } from "./utils.js";
 
 const CART_KEY = "vip_cart";
 const LAST_KEY = "vip_last_order";
@@ -38,27 +38,41 @@ export function removeFromCart(...ids) {
 export function clearCart() { saveCart([]); }
 export const cartCount = () => getCart().reduce((s, x) => s + x.qty, 0);
 
-// ---------- بيانات الصيدلية ----------
-export function getPharmacy() {
+// ---------- بيانات العميل (الصيدلية / المخزن) ----------
+// { id, name, area, phone } — الـ id كود عشوائي طويل بيتعمل مرة واحدة ويتبعت مع كل طلب
+export const PHONE_RE = /^[+0-9 ]{8,20}$/;
+export const cleanPhone = (v) => String(v || "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^+0-9 ]/g, "").trim();
+
+export function getCustomer() {
   const p = read(PHARM_KEY, null);
-  return p && p.name && p.area ? { name: String(p.name), area: String(p.area) } : null;
+  if (!p || !p.name || !p.area) return null;
+  // العملاء القدام (قبل الكود): نعملهم كود ونحفظه
+  if (!p.id || !/^[A-Za-z0-9]{24,64}$/.test(p.id)) { p.id = randomId(); write(PHARM_KEY, p); }
+  return { id: p.id, name: String(p.name), area: String(p.area), phone: String(p.phone || "") };
 }
-export function savePharmacy(name, area) {
-  write(PHARM_KEY, { name: String(name).trim(), area: String(area).trim() });
+// بيانات كاملة = فيها الموبايل كمان
+export const customerComplete = (c) => !!(c && c.name && c.area && PHONE_RE.test(c.phone));
+
+export function saveCustomer(name, area, phone) {
+  const old = read(PHARM_KEY, null) || {};
+  const id = old.id && /^[A-Za-z0-9]{24,64}$/.test(old.id) ? old.id : randomId();
+  write(PHARM_KEY, { id, name: String(name).trim(), area: String(area).trim(), phone: cleanPhone(phone) });
+  return getCustomer();
 }
+export const customerId = () => getCustomer()?.id || "";
 
 // ---------- آخر طلب ----------
 export function getLastOrder() {
   const o = read(LAST_KEY, null);
   return o && Array.isArray(o.items) ? o : null;
 }
-export function saveLastOrder(items) {
-  write(LAST_KEY, { items: items.map(({ id, qty }) => ({ id, qty: clampQty(qty) })), at: Date.now() });
+export function saveLastOrder(items, orderId = "") {
+  write(LAST_KEY, { items: items.map(({ id, qty }) => ({ id, qty: clampQty(qty) })), at: Date.now(), orderId });
 }
 
 // ---------- رسالة واتساب ----------
 // lines: [{ name, company, qty, unitPrice }]
-export function buildOrderMessage(pharmacy, lines) {
+export function buildOrderMessage(customer, lines) {
   const total = lines.reduce((s, l) => s + l.qty * l.unitPrice, 0);
   const body = lines.map((l, i) =>
     `${i + 1}) ${l.name}${l.company ? ` — ${l.company}` : ""}\n` +
@@ -67,8 +81,10 @@ export function buildOrderMessage(pharmacy, lines) {
   return [
     "طلب جديد من عروض VIP 🛒",
     "",
-    `🏪 الصيدلية / المخزن: ${pharmacy.name}`,
-    `📍 المنطقة: ${pharmacy.area}`,
+    `🏪 الصيدلية / المخزن: ${customer.name}`,
+    `📍 المنطقة: ${customer.area}`,
+    ...(customer.phone ? [`📞 الموبايل: ${customer.phone}`] : []),
+    ...(customer.id ? [`🆔 كود العميل: ${customer.id.slice(0, 8)}`] : []),
     "",
     body,
     "",

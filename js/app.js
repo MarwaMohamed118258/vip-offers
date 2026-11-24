@@ -1,10 +1,12 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
 import {
-  allCategories, esc, safeUrl, safeImage, num, calcTotals, offerStatus, normTitle
+  allCategories, esc, safeUrl, safeImage, num, calcTotals, offerStatus, normTitle,
+  monthKey, levelInfo, sortLevels, ratingsIndex, MIN_RATINGS
 } from "./utils.js";
 import {
   getCart, addToCart, setQty, removeFromCart, clearCart, cartCount,
-  getPharmacy, savePharmacy, getLastOrder, saveLastOrder, buildOrderMessage
+  getCustomer, saveCustomer, customerComplete, cleanPhone, PHONE_RE,
+  getLastOrder, saveLastOrder, buildOrderMessage
 } from "./cart.js";
 import {
   initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker,
@@ -22,6 +24,11 @@ const CATS_KEY = "vip_categories";
 const NAMES_KEY = "vip_names_en";
 const ALL = "__all";
 const KIND_KEY = "vip_kind";
+const RATINGS_KEY = "vip_ratings";
+const LOYALTY_KEY = "vip_loyalty";
+const LEVELS_KEY = "vip_levels";
+const RATED_KEY = "vip_rated";
+const APP_URL = "https://vip-offers-961c8.web.app";
 
 const state = {
   offers: [], loaded: false, fresh: false, company: "", category: ALL, search: "",
@@ -30,7 +37,12 @@ const state = {
   products: [], productsLoaded: false, productSearch: "",
   productById: new Map(), productByName: new Map(),
   savedCategories: [],
-  names: { categories: {}, companies: {} } // الأسماء الإنجليزي للأقسام والشركات
+  names: { categories: {}, companies: {} }, // الأسماء الإنجليزي للأقسام والشركات
+  levels: [], levelsLoaded: false,      // مستويات برنامج المكافآت (settings/loyalty)
+  bestsellers: [],                      // أكتر 5 عروض اتطلبت (settings/bestsellers)
+  ratingFor: ratingsIndex([]),          // تقييمات حقيقية بس (ratings)
+  loyalty: null, loyaltyLoaded: false,  // loyalty/{customerId}
+  installPrompt: null                   // beforeinstallprompt (أندرويد/كروم)
 };
 
 // ---------- تخزين محلي آمن ----------
@@ -100,13 +112,21 @@ async function loadOffers() {
 async function loadSettings() {
   state.savedCategories = readJSON(CATS_KEY, []);
   state.names = { categories: {}, companies: {}, ...readJSON(NAMES_KEY, {}) };
+  const savedLv = readJSON(LEVELS_KEY, {});
+  state.levels = sortLevels(savedLv.levels);
+  state.bestsellers = Array.isArray(savedLv.bestsellers) ? savedLv.bestsellers : [];
   try {
     const { db, doc, getDoc } = await firestore();
-    const [cats, names] = await Promise.all([
+    const [cats, names, loyalty, best] = await Promise.all([
       getDoc(doc(db, "settings", "categories")),
-      getDoc(doc(db, "settings", "names"))
+      getDoc(doc(db, "settings", "names")),
+      getDoc(doc(db, "settings", "loyalty")),
+      getDoc(doc(db, "settings", "bestsellers"))
     ]);
-    if (cats.metadata.fromCache || names.metadata.fromCache) throw new Error("offline");
+    if ([cats, names, loyalty, best].some((d) => d.metadata.fromCache)) throw new Error("offline");
+    state.levels = sortLevels(loyalty.exists() ? loyalty.data().levels : []);
+    state.bestsellers = best.exists() && Array.isArray(best.data().offerIds) ? best.data().offerIds.slice(0, 5) : [];
+    store.set(LEVELS_KEY, JSON.stringify({ levels: state.levels, bestsellers: state.bestsellers }));
     const list = cats.exists() && Array.isArray(cats.data().list) ? cats.data().list.filter((c) => typeof c === "string") : [];
     const n = names.exists() ? names.data() : {};
     state.savedCategories = list;
@@ -119,7 +139,75 @@ async function loadSettings() {
   } catch (e) {
     console.warn("settings", e);
   }
+  state.levelsLoaded = true;
   rerender();
+}
+
+// ---------- التقييمات (حقيقية بس: كل تقييم مربوط بطلب اتسلّم) ----------
+async function loadRatings() {
+  const cached = readJSON(RATINGS_KEY, null);
+  if (Array.isArray(cached)) { state.ratingFor = ratingsIndex(cached); rerender(); }
+  try {
+    const { db, collection, getDocs } = await firestore();
+    const snap = await getDocs(collection(db, "ratings"));
+    if (snap.metadata.fromCache) throw new Error("offline");
+    const list = snap.docs.map((d) => {
+      const r = d.data();
+      return {
+        id: d.id, productId: str(r.productId), productName: str(r.productName), stars: num(r.stars),
+        comment: r.commentHidden ? "" : str(r.comment), createdAt: r.createdAt?.toMillis?.() || 0
+      };
+    });
+    state.ratingFor = ratingsIndex(list);
+    const json = JSON.stringify(list);
+    if (json.length < 1_000_000) store.set(RATINGS_KEY, json);
+  } catch (e) {
+    console.warn("ratings", e.message || e);
+  }
+  rerender();
+}
+
+// ---------- المكافآت: مستند العميل loyalty/{customerId} (بالكود بتاعه بس) ----------
+async function loadLoyalty() {
+  const c = getCustomer();
+  if (!c) { state.loyaltyLoaded = true; rerender(); return; }
+  const cached = readJSON(LOYALTY_KEY, null);
+  if (cached && cached.id === c.id) { state.loyalty = cached.data; }
+  try {
+    const { db, doc, getDoc } = await firestore();
+    const snap = await getDoc(doc(db, "loyalty", c.id));
+    if (snap.metadata.fromCache) throw new Error("offline");
+    const d = snap.exists() ? snap.data() : {};
+    state.loyalty = {
+      months: d.months && typeof d.months === "object" ? d.months : {},
+      toRate: Array.isArray(d.toRate) ? d.toRate.filter((x) => x && x.orderId && x.key) : []
+    };
+    store.set(LOYALTY_KEY, JSON.stringify({ id: c.id, data: state.loyalty }));
+  } catch (e) {
+    console.warn("loyalty", e.message || e);
+  }
+  state.loyaltyLoaded = true;
+  rerender();
+}
+
+// التقييمات المطلوبة: منتجات في طلبات اتسلّمت ولسه متقيّمتش من الجهاز ده
+const ratedSet = () => new Set(readJSON(RATED_KEY, []));
+function pendingRatings() {
+  const done = ratedSet();
+  return (state.loyalty?.toRate || []).filter((x) => !done.has(`${x.orderId}_${x.key}`));
+}
+
+// ---------- النجوم ----------
+function starsHtml(avg) {
+  const full = Math.round(avg);
+  return `<span class="stars" aria-hidden="true">${"★".repeat(full)}<span class="off">${"★".repeat(5 - full)}</span></span>`;
+}
+// سطر التقييم بيظهر بس لو فيه 3 تقييمات أو أكتر (مفيش تقييمات وهمية أو افتراضية)
+function ratingLine(products) {
+  const r = state.ratingFor(products || []);
+  if (r.count < MIN_RATINGS) return "";
+  const avg = r.avg.toFixed(1);
+  return `<div class="stars-line" aria-label="${esc(t("starsAria", { n: avg }))}">${starsHtml(r.avg)} <b>${avg}</b> <span class="meta">(${t("ratingsCount", { n: r.count })})</span></div>`;
 }
 
 // بعد ما العروض تتحمّل من النت: نشيل من السلة أي عرض اتمسح أو خلص
@@ -182,7 +270,9 @@ function rerender() {
   if (r.name === "cart") renderCart();
   if (r.name === "products") renderCatalog();
   if (r.name === "product") renderProduct(r.id);
+  if (r.name === "rewards") renderRewards();
   if (r.name === "about" && state.about) renderAbout();
+  renderHomeAlerts();
   if (r.name === "notifications") renderNotif();
   updateCartBadge();
   updateReorder();
@@ -192,6 +282,7 @@ function rerender() {
 function badges(o) {
   const s = offerStatus(o);
   const out = [];
+  if (state.bestsellers.includes(o.id)) out.push(`<span class="badge badge-best">${t("bestseller")}</span>`);
   if (s.isNew) out.push(`<span class="badge badge-new">${t("badgeNew")}</span>`);
   if (s.endingSoon) {
     const label = s.daysLeft === 0 ? t("lastDay") : t("endsIn", { n: s.daysLeft });
@@ -253,6 +344,7 @@ function offerCard(o) {
       <div class="company"><svg><use href="#i-check"/></svg>${esc(companyName(o.company))}</div>
       <div class="meta">${esc(categoryName(o.category))} · ${t("items", { n: tt.items })}</div>
       <h2 class="offer-name">${esc(offerTitle(o))}</h2>
+      ${ratingLine(o.products)}
       <p class="products-short">${esc(short)}</p>
       ${thumbs(o)}
       <div class="price-row">
@@ -263,6 +355,7 @@ function offerCard(o) {
       <div class="card-actions">
         <a class="btn btn-purple" href="#/offer/${encodeURIComponent(o.id)}">${t("details")}</a>
         <button type="button" class="btn btn-yellow" data-add="${esc(o.id)}" aria-label="${esc(t("addToCart"))}"><svg><use href="#i-cart"/></svg>${t("add")}</button>
+        <button type="button" class="btn btn-ghost icon-only" data-share="${esc(o.id)}" aria-label="${esc(t("share"))}" title="${esc(t("share"))}"><svg><use href="#i-share"/></svg></button>
       </div>
     </div>
   </article>`;
@@ -344,6 +437,7 @@ function renderOffer(id) {
   // نحافظ على الكمية لو الصفحة اترسمت تاني (بعد تحميل الصور أو تغيير اللغة)
   const prevQty = body.dataset.offerId === o.id ? Number(body.dataset.qty) || 1 : 1;
   body.dataset.offerId = o.id;
+  countView(o.id);
 
   body.innerHTML = `
     ${img ? `<img src="${esc(img)}" alt="" style="margin-top:16px;border-radius:16px;width:100%">` : ""}
@@ -383,6 +477,7 @@ function renderOffer(id) {
     <div class="form-grid" style="margin-top:16px">
       <button type="button" id="add-cart-btn" class="btn btn-yellow btn-block"><svg><use href="#i-cart"/></svg>${t("addToCart")}</button>
       <button type="button" id="wa-btn" class="btn btn-green btn-block"><svg><use href="#i-wa"/></svg>${t("orderWa")}</button>
+      <button type="button" class="btn btn-ghost btn-block" data-share="${esc(o.id)}"><svg><use href="#i-share"/></svg>${t("share")}</button>
     </div>`;
 
   let qty = prevQty;
@@ -475,7 +570,9 @@ function renderProduct(id) {
       ${isEn() && p.nameEn && p.name ? `<p class="meta" lang="ar" dir="rtl">${esc(p.name)}</p>` : ""}
       <div class="company" style="justify-content:center"><svg><use href="#i-check"/></svg>${esc(companyName(p.company))}</div>
       ${num(p.publicPrice) ? `<p class="pprice big">${t("publicPrice")}: ${money(p.publicPrice)}</p>` : ""}
+      ${ratingLine([{ productId: p.id, name: p.name }])}
     </div>
+    ${productReviews(p)}
     <h2 class="section-title" style="margin-top:18px">${t("productOffers")} <span class="meta">(${offers.length})</span></h2>
     ${offers.length
       ? `<div class="offers-list">${offers.map(offerCard).join("")}</div>`
@@ -494,12 +591,12 @@ function cartLines() {
 
 function renderCart() {
   const body = $("#cart-body");
-  const pharm = getPharmacy();
+  const pharm = getCustomer();
   const pharmBox = `
     <div class="panel pharm-box">
       <div class="info">
         ${pharm
-          ? `<b>🏪 ${esc(pharm.name)}</b><div class="meta">📍 ${esc(pharm.area)}</div>`
+          ? `<b>🏪 ${esc(pharm.name)}</b><div class="meta">📍 ${esc(pharm.area)}${pharm.phone ? ` · 📞 <span dir="ltr">${esc(pharm.phone)}</span>` : ""}</div>`
           : `<b>${t("pharmTitle")}</b><div class="meta">${t("pharmLater")}</div>`}
       </div>
       <button type="button" class="btn btn-sm btn-ghost" data-edit-pharm>${pharm ? t("edit") : t("addInfo")}</button>
@@ -571,8 +668,8 @@ function updateCartBadge() {
 function startOrder(items, fromCart) {
   const available = items.filter((x) => findAvailable(x.id));
   if (!available.length) { toast(t("unavailable")); return; }
-  const pharm = getPharmacy();
-  if (pharm) sendOrder(available, fromCart, pharm);
+  const c = getCustomer();
+  if (customerComplete(c)) sendOrder(available, fromCart, c);
   else openPharmacyModal((p) => sendOrder(available, fromCart, p), true);
 }
 
@@ -587,16 +684,249 @@ function openWhatsApp(text) {
 }
 
 // رسالة الطلب بالعربي دايماً (بالأسماء العربي) مهما كانت لغة الواجهة
-function sendOrder(items, fromCart, pharm) {
+function sendOrder(items, fromCart, customer) {
   const lines = items.map((x) => {
     const o = findAvailable(x.id);
-    return { name: o.name, company: o.company, qty: x.qty, unitPrice: calcTotals(o.products).totalOffer };
+    const tt = calcTotals(o.products);
+    return {
+      offerId: o.id, name: o.name, company: o.company, qty: x.qty, unitPrice: tt.totalOffer, unitPublic: tt.totalPublic,
+      products: (o.products || []).filter((p) => p && p.name).map((p) => ({ productId: str(p.productId), name: str(p.name) }))
+    };
   });
-  openWhatsApp(buildOrderMessage(pharm, lines));
-  saveLastOrder(items);
+  // واتساب الأول (لازم في نفس الضغطة)، وبعدين نسجّل الطلب في Firestore
+  openWhatsApp(buildOrderMessage(customer, lines));
+  const orderId = saveOrder(customer, lines);
+  saveLastOrder(items, orderId);
   if (fromCart) clearCart();
   rerender();
   showThanks();
+}
+
+// سجل الطلبات: orders (الأدمن بس يقدر يقراه). لو النت فاصل بيتبعت لما يرجع طول ما الصفحة مفتوحة
+function saveOrder(customer, lines) {
+  const data = (fs) => ({
+    customerId: customer.id, name: customer.name.slice(0, 100), area: customer.area.slice(0, 100), phone: customer.phone,
+    items: lines.slice(0, 50),
+    total: lines.reduce((s, l) => s + l.qty * l.unitPrice, 0),
+    totalPublic: lines.reduce((s, l) => s + l.qty * l.unitPublic, 0),
+    itemsCount: lines.reduce((s, l) => s + l.qty, 0),
+    status: "جديد", createdAt: fs.serverTimestamp(), lang: isEn() ? "en" : "ar"
+  });
+  if (fb) {
+    const ref = fb.doc(fb.collection(fb.db, "orders"));
+    fb.setDoc(ref, data(fb)).catch((e) => console.warn("order not saved", e));
+    return ref.id;
+  }
+  firestore().then((f) => f.addDoc(f.collection(f.db, "orders"), data(f))).catch((e) => console.warn("order not saved", e));
+  return "";
+}
+
+// عدّاد المشاهدات: مرة واحدة لكل عرض في الجلسة (زيادة 1 في views/{offerId})
+function countView(offerId) {
+  const key = "vip_viewed_" + offerId;
+  try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, "1"); } catch { return; }
+  firestore().then(({ db, doc, setDoc, increment }) =>
+    setDoc(doc(db, "views", offerId), { count: increment(1) }, { merge: true })).catch(() => {});
+}
+
+// ---------- مشاركة عرض مع زميل ----------
+async function shareOffer(id) {
+  const o = findAvailable(id);
+  if (!o) return;
+  const tt = calcTotals(o.products);
+  const url = `${APP_URL}/#/offer/${encodeURIComponent(o.id)}`;
+  const text = t("shareText", { title: offerTitle(o), company: companyName(o.company), price: money(tt.totalOffer), old: money(tt.totalPublic) });
+  if (navigator.share) {
+    try { await navigator.share({ title: offerTitle(o), text, url }); return; }
+    catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`;
+  a.target = "_blank"; a.rel = "noopener";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// ---------- تثبيت التطبيق ----------
+const isStandaloneApp = () => window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+const isIOSDevice = () => /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const canInstall = () => !isStandaloneApp() && (!!state.installPrompt || isIOSDevice());
+
+async function installApp() {
+  if (state.installPrompt) {
+    const p = state.installPrompt;
+    state.installPrompt = null;
+    p.prompt();
+    try { await p.userChoice; } catch {}
+    renderHomeAlerts();
+    return;
+  }
+  openModal(`
+    <h2>${t("installIosTitle")}</h2>
+    <ol class="steps"><li>${t("installIos1")}</li><li>${t("installIos2")}</li><li>${t("installIos3")}</li></ol>
+    <button type="button" class="btn btn-purple btn-block" data-close>${t("ok")}</button>`);
+}
+
+// ---------- الصفحة الرئيسية: زرار التثبيت + طلب التقييم ----------
+function renderHomeAlerts() {
+  const box = $("#home-alerts");
+  const parts = [];
+  const pending = pendingRatings();
+  let laterDismissed = false;
+  try { laterDismissed = sessionStorage.getItem("vip_rate_later") === "1"; } catch {}
+  if (pending.length && !laterDismissed) {
+    parts.push(`
+      <div class="alert-card">
+        <div class="grow"><b>${t("rateTitle")}</b><div class="meta">${t("rateSub")}</div></div>
+        <button type="button" class="btn btn-sm btn-yellow" data-rate>${t("rateNow")}</button>
+      </div>`);
+  }
+  if (canInstall()) {
+    parts.push(`<button type="button" class="btn btn-ghost btn-block install-btn" data-install>${t("install")}</button>`);
+  }
+  box.innerHTML = parts.join("");
+}
+
+// ---------- التقييم ----------
+function openRatingModal() {
+  const items = pendingRatings();
+  if (!items.length) return;
+  const m = openModal(`
+    <h2>${t("rateModalTitle")}</h2>
+    <p>${t("rateSub")}</p>
+    <form class="form-grid rate-form">
+      ${items.map((it, i) => {
+        const p = state.productById.get(it.productId) || state.productByName.get(normTitle(it.name));
+        const img = p ? safeImage(p.image) : "";
+        const name = (p && isEn() && p.nameEn) || it.name;
+        return `
+        <div class="rate-item" data-i="${i}">
+          <div class="rate-head">${img ? lazyImg(img, "thumb", "", 48) : ""}<b>${esc(name)}</b></div>
+          <div class="star-pick" role="radiogroup" aria-label="${esc(name)}">
+            ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="false" data-star="${n}" aria-label="${esc(t("starsAria", { n }))}">★</button>`).join("")}
+          </div>
+          <textarea class="textarea" maxlength="500" rows="2" placeholder="${esc(t("commentPh"))}"></textarea>
+        </div>`;
+      }).join("")}
+      <p class="error" hidden></p>
+      <button type="submit" class="btn btn-purple btn-block">${t("sendRatings")}</button>
+      <button type="button" class="btn btn-ghost btn-block" data-close>${t("later")}</button>
+    </form>`);
+  const chosen = new Map();
+  m.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-star]");
+    if (!b) return;
+    const box = b.closest(".rate-item");
+    const n = Number(b.dataset.star);
+    chosen.set(Number(box.dataset.i), n);
+    $$("[data-star]", box).forEach((x) => {
+      x.classList.toggle("on", Number(x.dataset.star) <= n);
+      x.setAttribute("aria-checked", String(Number(x.dataset.star) === n));
+    });
+  });
+  $("form", m).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $(".error", m);
+    if (!chosen.size) { err.hidden = false; err.textContent = t("pickStars"); return; }
+    const btn = $('button[type="submit"]', m);
+    btn.disabled = true;
+    const { db, doc, setDoc, serverTimestamp } = await firestore();
+    const done = new Set(readJSON(RATED_KEY, []));
+    await Promise.allSettled([...chosen.entries()].map(async ([i, stars]) => {
+      const it = items[i];
+      const id = `${it.orderId}_${it.key}`;
+      const comment = $(`.rate-item[data-i="${i}"] textarea`, m).value.trim().slice(0, 500);
+      const data = { orderId: it.orderId, productKey: it.key, productId: it.productId || "", productName: String(it.name || "").slice(0, 200), stars, createdAt: serverTimestamp() };
+      if (comment) data.comment = comment;
+      try { await setDoc(doc(db, "ratings", id), data); done.add(id); }
+      catch (e2) { if (e2.code === "permission-denied") done.add(id); else throw e2; } // اتقيّم قبل كده
+    }));
+    store.set(RATED_KEY, JSON.stringify([...done]));
+    m.remove();
+    toast(t("ratingsThanks"));
+    loadRatings();
+    renderHomeAlerts();
+  });
+}
+
+// تعليقات المنتج (بتظهر بس لو فيه 3 تقييمات أو أكتر)
+function productReviews(p) {
+  const r = state.ratingFor([{ productId: p.id, name: p.name }]);
+  if (r.count < MIN_RATINGS) return "";
+  const withText = r.list.filter((x) => x.comment).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+  if (!withText.length) return "";
+  return `
+    <div class="panel">
+      <h3 class="section-title">${t("productRatings")}</h3>
+      <div class="reviews-list">${withText.map((x) => `
+        <div class="review"><div>${starsHtml(x.stars)}</div><p>${esc(x.comment)}</p></div>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ---------- صفحة المكافآت ----------
+function monthLabel(key) {
+  const [y, mo] = key.split("-").map(Number);
+  return new Date(y, mo - 1, 1).toLocaleDateString(isEn() ? "en-US" : "ar-EG", { month: "long", year: "numeric" });
+}
+
+function renderRewards() {
+  const body = $("#rewards-body");
+  if (!state.levelsLoaded || !state.loyaltyLoaded) { body.innerHTML = `<div class="skeleton" style="margin-top:16px"></div>`; return; }
+  const levels = state.levels;
+  const months = state.loyalty?.months || {};
+  const cur = monthKey();
+  const total = Math.max(0, num(months[cur]));
+  const hasHistory = Object.values(months).some((v) => num(v) > 0);
+  const info = levelInfo(total, levels);
+  const parts = [];
+
+  if (!levels.length) {
+    parts.push(`<div class="panel state-msg"><svg width="56" height="56" style="color:var(--purple)"><use href="#i-gift"/></svg><p>${t("noLevels")}</p></div>`);
+  } else if (!hasHistory) {
+    // لسه مفيش طلبات اتسلّمت: نعرض المستويات ونشجّعه
+    parts.push(`
+      <div class="panel rewards-hero">
+        <svg width="56" height="56"><use href="#i-gift"/></svg>
+        <p>${t("rewardsIntro")}</p>
+        <a class="btn btn-purple btn-block" href="#/">${t("seeOffers")}</a>
+      </div>`);
+  } else {
+    parts.push(`
+      <div class="panel rewards-hero">
+        <div class="meta">${t("thisMonth")} · ${esc(monthLabel(cur))}</div>
+        <div class="level-name">${info.current ? `🏆 ${esc(info.current.name)}` : esc(t("noLevelYet"))}</div>
+        ${info.current && info.current.reward ? `<div class="reward-box">🎁 ${t("rewardLabel")}: ${esc(info.current.reward)}</div>` : ""}
+        <p class="meta" style="margin:10px 0 6px">${esc(t("confirmedTotal", { x: money(total) }))}</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(info.progress * 100)}">
+          <span style="width:${Math.round(info.progress * 100)}%"></span>
+        </div>
+        <p class="next-text">${info.next ? esc(t("nextLevel", { x: money(info.remaining), name: info.next.name })) : esc(t("topLevel"))}</p>
+      </div>`);
+  }
+
+  if (levels.length) {
+    parts.push(`
+      <h2 class="section-title" style="margin-top:18px">${t("levelsTitle")}</h2>
+      <div class="levels">${levels.map((l) => `
+        <div class="level-card${info.current && info.current.name === l.name && hasHistory ? " current" : ""}">
+          <b>🏆 ${esc(l.name)}</b>
+          <div class="meta">${esc(t("monthlyTarget", { x: money(l.target) }))}</div>
+          ${l.reward ? `<div class="reward">🎁 ${esc(l.reward)}</div>` : ""}
+        </div>`).join("")}
+      </div>`);
+  }
+
+  const past = Object.entries(months).filter(([k, v]) => k < cur && num(v) > 0).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  if (past.length) {
+    parts.push(`
+      <h2 class="section-title" style="margin-top:18px">${t("historyTitle")}</h2>
+      <div class="panel history">${past.map(([k, v]) => {
+        const lv = levelInfo(num(v), levels).current;
+        return `<div class="history-row"><span>${esc(monthLabel(k))}</span><span>${money(num(v))}</span><span class="meta">${lv ? "🏆 " + esc(lv.name) : "—"}</span></div>`;
+      }).join("")}</div>`);
+  }
+  if (levels.length) parts.push(`<p class="meta" style="margin-top:12px">${t("countsNote")}</p>`);
+  body.innerHTML = parts.join("");
 }
 
 // ---------- نوافذ ----------
@@ -610,13 +940,15 @@ function openModal(html) {
 }
 
 function openPharmacyModal(onSaved, sending = false) {
-  const p = getPharmacy() || { name: "", area: "" };
+  const p = getCustomer() || { name: "", area: "", phone: "" };
   const m = openModal(`
     <h2>${t("pharmTitle")}</h2>
     <p>${t("pharmIntro")}</p>
     <form class="form-grid">
       <div class="field"><label for="ph-name">${t("pharmName")}</label><input id="ph-name" class="input" required value="${esc(p.name)}" autocomplete="organization"></div>
       <div class="field"><label for="ph-area">${t("area")}</label><input id="ph-area" class="input" required value="${esc(p.area)}"></div>
+      <div class="field"><label for="ph-phone">${t("phone")}</label><input id="ph-phone" class="input" type="tel" inputmode="tel" dir="ltr" required autocomplete="tel" value="${esc(p.phone)}" placeholder="01xxxxxxxxx"></div>
+      <p class="error" id="ph-error" hidden></p>
       <button type="submit" class="btn ${sending ? "btn-green" : "btn-purple"} btn-block">${sending ? `<svg><use href="#i-wa"/></svg>${t("saveSend")}` : t("save")}</button>
       <button type="button" class="btn btn-ghost btn-block" data-close>${t("cancel")}</button>
     </form>`);
@@ -625,10 +957,17 @@ function openPharmacyModal(onSaved, sending = false) {
     e.preventDefault();
     const name = $("#ph-name", m).value.trim();
     const area = $("#ph-area", m).value.trim();
+    const phone = cleanPhone($("#ph-phone", m).value);
     if (!name || !area) return;
-    savePharmacy(name, area);
+    if (!PHONE_RE.test(phone) || phone.replace(/\D/g, "").length < 8) {
+      const err = $("#ph-error", m); err.hidden = false; err.textContent = t("phoneInvalid");
+      return;
+    }
+    const isNew = !getCustomer();
+    saveCustomer(name, area, phone);
+    if (isNew) loadLoyalty();
     m.remove();
-    if (onSaved) onSaved(getPharmacy());
+    if (onSaved) onSaved(getCustomer());
     else { renderCart(); toast(t("saved")); }
   });
 }
@@ -722,7 +1061,7 @@ function currentRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   if (h.startsWith("offer/")) return { name: "offer", id: decodeURIComponent(h.slice(6)) };
   if (h.startsWith("product/")) return { name: "product", id: decodeURIComponent(h.slice(8)) };
-  if (["notifications", "about", "cart", "products"].includes(h)) return { name: h };
+  if (["notifications", "about", "cart", "products", "rewards"].includes(h)) return { name: h };
   return { name: "home" };
 }
 
@@ -737,6 +1076,7 @@ function route() {
   if (r.name === "products") renderCatalog();
   if (r.name === "product") renderProduct(r.id);
   if (r.name === "cart") renderCart();
+  if (r.name === "rewards") renderRewards();
   if (r.name === "about" && !state.about) loadAbout();
   if (r.name === "notifications") renderNotif();
   window.scrollTo(0, 0);
@@ -757,6 +1097,11 @@ document.addEventListener("click", async (e) => {
     rerender();
     return;
   }
+
+  const shareBtn = e.target.closest("[data-share]");
+  if (shareBtn) { shareOffer(shareBtn.dataset.share); return; }
+  if (e.target.closest("[data-install]")) { installApp(); return; }
+  if (e.target.closest("[data-rate]")) { openRatingModal(); return; }
 
   const kindBtn = e.target.closest("[data-kind]");
   if (kindBtn) { state.kind = kindBtn.dataset.kind; store.set(KIND_KEY, state.kind); renderHome(); return; }
@@ -837,5 +1182,15 @@ route();
 renderNotif();
 updateCartBadge();
 loadOffers();
+loadRatings();
+loadLoyalty();
 initNotifications();
+
+// زرار «ثبّت التطبيق»: أندرويد/كروم بيدّينا beforeinstallprompt، والآيفون خطوات
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); state.installPrompt = e; renderHomeAlerts(); });
+window.addEventListener("appinstalled", () => { state.installPrompt = null; renderHomeAlerts(); toast(t("installDone")); });
+// زرار «بعدين» في نافذة التقييم: منسألش تاني في نفس الجلسة
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".rate-form [data-close]")) { try { sessionStorage.setItem("vip_rate_later", "1"); } catch {} renderHomeAlerts(); }
+});
 window.addEventListener("load", registerAppServiceWorker);

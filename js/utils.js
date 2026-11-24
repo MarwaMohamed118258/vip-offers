@@ -292,3 +292,98 @@ export function planEnglishNames(json, products, offers, knownCategories = [], k
     }
   };
 }
+
+// =====================================================================
+// الطلبات والمكافآت والتقييمات
+// =====================================================================
+export const ORDER_STATUSES = ["جديد", "تم التواصل", "اتسلّم", "ملغي"];
+export const DELIVERED = "اتسلّم";
+
+// كود عشوائي طويل (للعميل): 32 حرف من crypto
+export function randomId(len = 32) {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const bytes = new Uint8Array(len);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map((b) => abc[b % abc.length]).join("");
+}
+
+// الشهر بالشكل 2026-11 (بالتوقيت المحلي)
+export function monthKey(ms = Date.now()) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+// مفتاح المنتج للتقييمات: الـ productId لو موجود، وإلا بصمة من الاسم (حروف وأرقام بس عشان ينفع ID)
+export function productKey(it) {
+  if (it && typeof it.productId === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(it.productId)) return it.productId;
+  const s = normTitle(it?.name || "");
+  let h1 = 5381, h2 = 52711;
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = (h1 * 33) ^ c; h2 = (h2 * 31) ^ c; }
+  return "n_" + (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36);
+}
+
+// المنتجات المختلفة جوّه طلب (عشان التقييم): [{ key, productId, name }]
+export function orderProducts(order) {
+  const seen = new Map();
+  for (const line of order.items || []) {
+    for (const p of line.products || []) {
+      const key = productKey(p);
+      if (!seen.has(key)) seen.set(key, { key, productId: p.productId || "", name: String(p.name || "") });
+    }
+  }
+  return [...seen.values()];
+}
+
+// مستويات المكافآت: [{ name, target, reward }] مترتبة بالهدف
+export function sortLevels(levels) {
+  return (Array.isArray(levels) ? levels : [])
+    .filter((l) => l && String(l.name || "").trim() && num(l.target) > 0)
+    .map((l) => ({ name: String(l.name).trim(), target: num(l.target), reward: String(l.reward || "").trim() }))
+    .sort((a, b) => a.target - b.target);
+}
+
+// المستوى الحالي واللي بعده ونسبة التقدّم لمجموع معيّن
+export function levelInfo(total, levels) {
+  const ls = sortLevels(levels);
+  let current = null, next = null;
+  for (const l of ls) { if (total >= l.target) current = l; else { next = l; break; } }
+  const from = current ? current.target : 0;
+  const progress = next ? Math.max(0, Math.min(1, (total - from) / (next.target - from))) : (current ? 1 : 0);
+  return { current, next, progress, remaining: next ? Math.max(0, next.target - total) : 0 };
+}
+
+// ملخّص التقييمات: ratings [{ id, productId, productName, stars, comment, commentHidden }]
+// بيرجّع دالة بتجيب { avg, count, list } لمجموعة منتجات (بالـ id أو بالاسم)
+export const MIN_RATINGS = 3;
+export function ratingsIndex(ratings) {
+  const byId = new Map(), byName = new Map();
+  for (const r of ratings || []) {
+    const s = Math.round(num(r.stars));
+    if (s < 1 || s > 5) continue;
+    const rr = { ...r, stars: s };
+    if (r.productId) (byId.get(r.productId) || byId.set(r.productId, []).get(r.productId)).push(rr);
+    const n = normTitle(r.productName || "");
+    if (n) (byName.get(n) || byName.set(n, []).get(n)).push(rr);
+  }
+  return (products) => {
+    const all = new Map();
+    for (const p of products || []) {
+      for (const r of [...(byId.get(p.productId || p.id) || []), ...(byName.get(normTitle(p.name || "")) || [])]) all.set(r.id, r);
+    }
+    const list = [...all.values()];
+    const count = list.length;
+    const avg = count ? list.reduce((s, r) => s + r.stars, 0) / count : 0;
+    return { avg, count, list };
+  };
+}
+
+// أكتر 5 عروض اتطلبت (طلبات «اتسلّم» في آخر 30 يوم، بالكمية)
+export function topOffers(orders, now = Date.now(), n = 5, days = 30) {
+  const since = now - days * 86400000;
+  const qty = new Map();
+  for (const o of orders || []) {
+    if (o.status !== DELIVERED || toMillis(o.createdAt) < since) continue;
+    for (const it of o.items || []) if (it.offerId) qty.set(it.offerId, (qty.get(it.offerId) || 0) + Math.max(1, num(it.qty)));
+  }
+  return [...qty.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([id]) => id);
+}
