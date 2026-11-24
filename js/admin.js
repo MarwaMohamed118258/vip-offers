@@ -1,7 +1,7 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
 import {
   allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
-  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr
+  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 
@@ -16,7 +16,7 @@ if (!isFirebaseConfigured()) {
 const { db, auth } = await import("./firebase.js");
 const {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, serverTimestamp,
-  writeBatch, Timestamp
+  writeBatch, Timestamp, arrayUnion
 } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 const { signInWithEmailAndPassword, onAuthStateChanged, signOut } =
   await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
@@ -79,6 +79,7 @@ onAuthStateChanged(auth, async (user) => {
   $("#logout").hidden = !user;
   $("#who").textContent = user ? user.email : "سجّلي دخول الأول";
   if (user) {
+    await loadCategories();
     await loadProducts();
     await loadOffers();
     loadAbout();
@@ -104,23 +105,64 @@ $$("[data-tab]").forEach((b) => b.addEventListener("click", () => {
 }));
 
 // ---------- قوائم مشتركة (الشركات والأقسام) ----------
+// الأقسام: قايمة منسدلة فيها الأقسام الموجودة + «+ قسم جديد» بيظهر خانة نكتب فيها الاسم
+const NEW_CAT = "__new";
+let savedCategories = []; // الأقسام اللي اتضافت من هنا (settings/categories)
+const categoryList = () => allCategories([...offers, ...products], savedCategories);
+
+async function loadCategories() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "categories"));
+    savedCategories = snap.exists() && Array.isArray(snap.data().list) ? snap.data().list : [];
+  } catch (err) { console.error(err); }
+  fillLists();
+}
+
+function fillCategorySelect(sel, keep = sel.value) {
+  const cats = categoryList();
+  const optional = sel.hasAttribute("data-optional");
+  const current = keep && keep !== NEW_CAT && !cats.includes(keep) ? [...cats, keep] : cats;
+  sel.innerHTML =
+    `<option value="">${optional ? "— من غير قسم —" : "— اختاري القسم —"}</option>` +
+    current.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("") +
+    `<option value="${NEW_CAT}">+ قسم جديد</option>`;
+  sel.value = keep || "";
+  toggleNewCategory(sel);
+}
+
+function newCatInput(sel) { return $(`#${sel.id}-new`); }
+function toggleNewCategory(sel) {
+  const input = newCatInput(sel);
+  const isNew = sel.value === NEW_CAT;
+  input.hidden = !isNew;
+  input.required = isNew;
+  if (!isNew) input.value = "";
+}
+$$("[data-cat-select]").forEach((sel) => sel.addEventListener("change", () => {
+  toggleNewCategory(sel);
+  if (sel.value === NEW_CAT) newCatInput(sel).focus();
+}));
+
+function setCategoryValue(sel, c) { fillCategorySelect(sel, c || ""); }
+
+// القسم المختار (ولو جديد: الاسم المكتوب، أو الموجود لو نفس الاسم تقريباً)
+function readCategory(sel) {
+  if (sel.value !== NEW_CAT) return sel.value;
+  return matchCategory(newCatInput(sel).value, categoryList());
+}
+
+// نحفظ القسم الجديد في settings/categories عشان يظهر للعملاء على طول
+async function rememberCategory(c) {
+  if (!c || categoryList().includes(c)) return;
+  await setDoc(doc(db, "settings", "categories"), { list: arrayUnion(c), updatedAt: serverTimestamp() }, { merge: true });
+  savedCategories = [...savedCategories, c];
+}
+
 function fillLists() {
-  const cats = allCategories([...offers, ...products]);
-  const sel = $("#o-category").value;
-  const opts = sel && !cats.includes(sel) ? [...cats, sel] : cats;
-  $("#o-category").innerHTML = opts.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
-  if (sel) $("#o-category").value = sel;
-  $("#categories-list").innerHTML = cats.map((c) => `<option value="${esc(c)}">`).join("");
+  $$("[data-cat-select]").forEach((sel) => fillCategorySelect(sel));
   const companies = [...new Set([...offers, ...products].map((o) => o.company).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, "ar"));
   $("#companies").innerHTML = companies.map((n) => `<option value="${esc(n)}">`).join("");
-}
-function setCategory(c) {
-  $("#o-category").value = c;
-  if (c && $("#o-category").value !== c) {
-    $("#o-category").insertAdjacentHTML("beforeend", `<option value="${esc(c)}">${esc(c)}</option>`);
-    $("#o-category").value = c;
-  }
 }
 
 // =====================================================================
@@ -193,6 +235,7 @@ $("#p-clear-img").addEventListener("click", () => { $("#p-image-url").value = ""
 function resetProductForm() {
   editingProductId = null;
   $("#product-form").reset();
+  fillCategorySelect($("#p-category"), "");
   setPendingImage("");
   $("#p-form-title").textContent = "منتج جديد";
   $("#p-save-btn").textContent = "حفظ المنتج";
@@ -205,7 +248,7 @@ $("#product-form").addEventListener("submit", async (e) => {
   const msg = $("#product-msg");
   const data = {
     company: $("#p-company").value.trim(),
-    category: $("#p-category").value.trim(),
+    category: readCategory($("#p-category")),
     name: $("#p-name").value.trim().replace(/\s+/g, " "),
     publicPrice: num($("#p-price").value),
     image: pendingImage,
@@ -215,6 +258,7 @@ $("#product-form").addEventListener("submit", async (e) => {
   if (dup) return showMsg(msg, `فيه منتج بنفس الاسم: «${dup.name}»`);
   const btn = $("#p-save-btn"); btn.disabled = true;
   try {
+    await rememberCategory(data.category);
     if (editingProductId) await updateDoc(doc(db, "products", editingProductId), data);
     else await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
     showMsg(msg, editingProductId ? "اتعدّل المنتج ✅" : "اتضاف المنتج ✅", true);
@@ -233,7 +277,7 @@ $("#admin-products").addEventListener("click", async (e) => {
     if (!p) return;
     editingProductId = p.id;
     $("#p-company").value = p.company || "";
-    $("#p-category").value = p.category || "";
+    setCategoryValue($("#p-category"), p.category);
     $("#p-name").value = p.name || "";
     $("#p-price").value = p.publicPrice ?? "";
     const img = safeImage(p.image);
@@ -443,6 +487,7 @@ $("#add-product").addEventListener("click", () => { addItemRow(); updateCalc(); 
 function resetForm() {
   editingId = null;
   $("#offer-form").reset();
+  fillCategorySelect($("#o-category"), "");
   $("#products").innerHTML = "";
   addItemRow();
   updateCalc();
@@ -483,11 +528,13 @@ $("#offer-form").addEventListener("submit", async (e) => {
   const items = readItems();
   if (!items.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
   const data = offerPayload({
-    company: $("#o-company").value, category: $("#o-category").value,
+    company: $("#o-company").value, category: readCategory($("#o-category")),
     name: $("#o-name").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items
   });
+  if (!data.category) return showMsg(msg, "اختاري القسم");
   const btn = $("#save-btn"); btn.disabled = true;
   try {
+    await rememberCategory(data.category);
     if (editingId) await updateDoc(doc(db, "offers", editingId), data);
     else {
       await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
@@ -578,7 +625,7 @@ $("#admin-offers").addEventListener("click", async (e) => {
     if (!o) return;
     editingId = o.id;
     $("#o-company").value = o.company || "";
-    setCategory(o.category || "");
+    setCategoryValue($("#o-category"), o.category);
     $("#o-name").value = o.name || "";
     $("#o-image").value = o.imageUrl || "";
     $("#o-end").value = isDateStr(o.endDate) ? o.endDate : "";

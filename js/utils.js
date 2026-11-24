@@ -1,13 +1,25 @@
 // أدوات مشتركة بين التطبيق ولوحة الأدمن
 
-export const CATEGORIES = ["شعر", "بشرة", "وزن", "أطفال", "عناية شخصية", "رياضة"];
+export const CATEGORIES = [
+  "شعر", "بشرة", "وزن", "أطفال", "عناية شخصية", "رياضة", "مكملات غذائية", "فيتامينات"
+];
 
-// الأقسام الأساسية + أي قسم جديد موجود في العروض (زي اللي بييجي من ملف الاستيراد)
-export function allCategories(offers = []) {
-  const extra = [...new Set(offers.map((o) => String(o.category || "").trim()).filter(Boolean))]
-    .filter((c) => !CATEGORIES.includes(c))
+// الأقسام الأساسية + الأقسام اللي الأدمن ضافها (settings/categories)
+// + أي قسم موجود في العروض أو المنتجات (زي اللي بييجي من ملف الاستيراد)
+export function allCategories(items = [], saved = []) {
+  const out = [...CATEGORIES];
+  const seen = new Set(out.map((c) => normTitle(c)));
+  const extra = [...saved, ...items.map((o) => o.category)]
+    .map((c) => String(c || "").trim().replace(/\s+/g, " "))
+    .filter((c) => c && !seen.has(normTitle(c)) && seen.add(normTitle(c)))
     .sort((a, b) => a.localeCompare(b, "ar"));
-  return [...CATEGORIES, ...extra];
+  return [...out, ...extra];
+}
+
+// لو القسم اللي اتكتب موجود بشكل قريب (مسافات، أ/ا، ة/ه…) نستخدم الموجود
+export function matchCategory(name, cats) {
+  const n = String(name || "").trim().replace(/\s+/g, " ");
+  return cats.find((c) => normTitle(c) === normTitle(n)) || n;
 }
 
 // توحيد اسم العرض للمقارنة (مسافات زيادة، ي/ى، أ/إ/آ، ة/ه)

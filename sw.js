@@ -5,7 +5,7 @@ try {
   // لو النت مقطوع أو OneSignal مش متاح، التطبيق يفضل شغال عادي
 }
 
-const VERSION = "vip-v6";
+const VERSION = "vip-v7";
 const SHELL = [
   "/",
   "/index.html",

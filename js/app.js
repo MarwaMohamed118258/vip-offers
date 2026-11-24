@@ -15,11 +15,12 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const WELCOME_KEY = "vip_welcomed";
 const CACHE_KEY = "vip_offers_cache";
 const IMAGES_KEY = "vip_product_images";
+const CATS_KEY = "vip_categories";
 const THANKS = "هيتم تسجيل طلبك ونشكر سيادتكم على ثقتك ونسعد باستمرار التعاون المثمر معك ❤️";
 
 const state = {
   offers: [], loaded: false, fresh: false, company: "", category: "الكل",
-  about: null, productImages: new Map()
+  about: null, productImages: new Map(), savedCategories: []
 };
 
 // ---------- تخزين محلي آمن ----------
@@ -73,6 +74,22 @@ async function loadOffers() {
   }
   rerender();
   loadProductImages();
+  loadCategories();
+}
+
+// الأقسام اللي الأدمن ضافها (settings/categories) بتظهر في الفلتر حتى لو لسه مفيش عروض فيها
+async function loadCategories() {
+  try { state.savedCategories = JSON.parse(store.get(CATS_KEY) || "[]"); } catch {}
+  try {
+    const { db, doc, getDoc } = await firestore();
+    const snap = await getDoc(doc(db, "settings", "categories"));
+    const list = snap.exists() && Array.isArray(snap.data().list) ? snap.data().list.filter((c) => typeof c === "string") : [];
+    state.savedCategories = list;
+    store.set(CATS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn("categories", e);
+  }
+  renderHome();
 }
 
 // بعد ما العروض تتحمّل من النت: نشيل من السلة أي عرض اتمسح أو خلص
@@ -148,7 +165,7 @@ function renderFilters(offers) {
   sel.innerHTML = `<option value="">كل الشركات</option>` +
     companies.map((c) => `<option value="${esc(c)}"${c === state.company ? " selected" : ""}>${esc(c)}</option>`).join("");
 
-  $("#category-chips").innerHTML = ["الكل", ...allCategories(offers)].map((c) =>
+  $("#category-chips").innerHTML = ["الكل", ...allCategories(offers, state.savedCategories)].map((c) =>
     `<button type="button" class="chip${c === state.category ? " active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === state.category}">${esc(c)}</button>`
   ).join("");
 }
