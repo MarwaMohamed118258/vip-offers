@@ -387,3 +387,57 @@ export function topOffers(orders, now = Date.now(), n = 5, days = 30) {
   }
   return [...qty.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([id]) => id);
 }
+
+// ---------- الاقتراحات ----------
+// النوع والحالة بيتسجّلوا بالعربي دايماً (الأدمن بيشتغل بالعربي)
+export const SUGGESTION_TYPES = ["اقتراح عرض", "منتج جديد", "ملاحظة"];
+export const SUGGESTION_STATUSES = ["جديد", "اتبعت للأونر", "اتنفّذ", "مؤجل"];
+export const SUGGESTION_OTHER = "أخرى";
+export const SUGGESTION_MAX = 1000;
+
+// ---------- صفحة «مانجر مروة» ----------
+// المحتوى الافتراضي لحد ما يتحفظ من لوحة الأدمن. كل سطر لوحده، والسطور اللي بتبدأ بـ ✔️ بتظهر كقائمة.
+export const DEFAULT_ABOUT = {
+  name: "مانجر / مروة محمد",
+  nameEn: "Manager / Marwa Mohamed",
+  title: "Sales & Business Development Manager",
+  titleEn: "Sales & Business Development Manager",
+  tagline: "شراكة ناجحة أساسها الثقة، وأسعار تدعم تجارتكم ومكاسبكم.",
+  taglineEn: "A successful partnership built on trust, with prices that support your business and profits.",
+  body: [
+    "خبرة أكثر من 13 عامًا في مجال التسويق وإدارة المبيعات وبناء فرق العمل.",
+    "أؤمن أن النجاح الحقيقي لا يقتصر على إتمام عملية البيع، بل يبدأ ببناء علاقة قوية ومستدامة مع شركاء النجاح.",
+    "✔️ أفضل فرص التعاون والعروض من مصادر موثوقة.",
+    "✔️ دعم تسويقي وبيعي يساعد على تنمية تجارتكم.",
+    "✔️ متابعة شخصية واهتمام بكل طلب.",
+    "✔️ فرص مستمرة لتحقيق المزيد من المكاسب.",
+    "يسعدني أن أكون جزءًا من رحلتكم نحو نجاح أكبر ❤️"
+  ].join("\n"),
+  bodyEn: [
+    "13+ years of experience in marketing, sales management, and team building.",
+    "I believe real success is not just about closing a sale; it starts with building a strong, lasting relationship with our partners.",
+    "✔️ The best opportunities and offers from trusted sources.",
+    "✔️ Marketing and sales support to help your business grow.",
+    "✔️ Personal follow-up and care for every order.",
+    "✔️ Ongoing opportunities to earn more.",
+    "Happy to be part of your journey to greater success ❤️"
+  ].join("\n"),
+  photoUrl: "",
+  reviews: []
+};
+// الحقل من المستند لو اتحفظ قبل كده (حتى لو فاضي)، وإلا الافتراضي
+export const aboutField = (a, k) => (a && k in a ? a[k] : DEFAULT_ABOUT[k]);
+
+// النص → فقرات + قائمة ✔️ (HTML آمن)
+const CHECK_RE = /^(✔️|✔|✅|☑️)\s*/;
+export function aboutBodyHtml(text) {
+  const out = [];
+  let list = [];
+  const flush = () => { if (list.length) out.push(`<ul class="checklist">${list.join("")}</ul>`); list = []; };
+  for (const line of String(text || "").split("\n").map((s) => s.trim()).filter(Boolean)) {
+    if (CHECK_RE.test(line)) list.push(`<li>${esc(line.replace(CHECK_RE, ""))}</li>`);
+    else { flush(); out.push(`<p>${esc(line)}</p>`); }
+  }
+  flush();
+  return out.join("");
+}

@@ -6,7 +6,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   esc, money, num, normTitle, toMillis, monthKey, orderProducts, sortLevels, levelInfo, topOffers,
-  ORDER_STATUSES, DELIVERED
+  ORDER_STATUSES, DELIVERED, SUGGESTION_TYPES, SUGGESTION_STATUSES
 } from "./utils.js";
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -304,10 +304,120 @@ async function loadRatingsAdmin() {
 }
 
 // =====================================================================
+// الاقتراحات
+// =====================================================================
+let suggestions = [];
+let sgType = "الكل", sgStatus = "الكل";
+const sgStatusClass = (s) => ({ "جديد": "st-new", "اتبعت للأونر": "st-contacted", "اتنفّذ": "st-done", "مؤجل": "st-cancel" }[s] || "");
+const sgCopyText = (s) => `💡 ${s.type}${s.company ? " – " + s.company : ""}\n${s.text}`;
+
+async function loadSuggestions() {
+  const box = $("#sg-list");
+  try {
+    const snap = await getDocs(query(collection(db, "suggestions"), orderBy("createdAt", "desc"), limit(1000)));
+    suggestions = snap.docs.map((d) => ({ id: d.id, ...d.data(), createdAt: toMillis(d.data().createdAt) }));
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = `<p class="error">${esc(errText(e))}</p>`;
+    return;
+  }
+  renderSuggestions();
+}
+
+function chipRow(values, current, attr, count) {
+  return ["الكل", ...values].map((v) =>
+    `<button type="button" class="chip${v === current ? " active" : ""}" ${attr}="${esc(v)}">${esc(v)} <span class="meta">${count(v)}</span></button>`).join("");
+}
+
+function renderSuggestions() {
+  const byType = (s) => sgType === "الكل" || s.type === sgType;
+  const byStatus = (s) => sgStatus === "الكل" || s.status === sgStatus;
+  $("#sg-type-filters").innerHTML = chipRow(SUGGESTION_TYPES, sgType, "data-sgtype",
+    (v) => suggestions.filter((s) => byStatus(s) && (v === "الكل" || s.type === v)).length);
+  $("#sg-status-filters").innerHTML = chipRow(SUGGESTION_STATUSES, sgStatus, "data-sgstatus",
+    (v) => suggestions.filter((s) => byType(s) && (v === "الكل" || s.status === v)).length);
+  const list = suggestions.filter((s) => byType(s) && byStatus(s));
+  $("#sg-list").innerHTML = list.length ? list.map(suggestionCard).join("") :
+    `<p class="state-msg">${suggestions.length ? "مفيش اقتراحات بالفلتر ده" : "مفيش اقتراحات لسه. أول ما عميل يبعت اقتراح هيظهر هنا."}</p>`;
+}
+
+function suggestionCard(s) {
+  const wa = waNumber(s.phone);
+  const who = [s.name && `🏪 ${esc(s.name)}`, s.area && `📍 ${esc(s.area)}`, `🕒 ${esc(fmtDate(s.createdAt))}`,
+    s.customerId && `🆔 ${esc(String(s.customerId).slice(0, 8))}`].filter(Boolean).join(" · ");
+  return `
+  <div class="order-card sg-card ${sgStatusClass(s.status)}">
+    <div class="order-head">
+      <div class="grow">
+        <b>${esc(s.type)}</b>${s.company ? ` <span class="meta">– ${esc(s.company)}</span>` : ""}
+        <div class="meta">${who}</div>
+      </div>
+      <span class="status-pill">${esc(s.status)}</span>
+    </div>
+    <p class="sg-text" dir="auto">${esc(s.text)}</p>
+    <div class="order-foot">
+      <button type="button" class="btn btn-sm btn-purple" data-sg-copy="${esc(s.id)}">📋 انسخي الاقتراح</button>
+      <span class="row-gap">
+        ${s.phone ? `<a class="btn btn-sm btn-ghost" href="tel:${esc(String(s.phone).replace(/[^+0-9]/g, ""))}" dir="ltr">📞 ${esc(s.phone)}</a>` : ""}
+        ${wa.length >= 10 ? `<a class="btn btn-sm btn-green" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">واتساب</a>` : ""}
+      </span>
+    </div>
+    <div class="status-btns sg-st">${SUGGESTION_STATUSES.map((st) =>
+      `<button type="button" class="btn btn-sm ${st === s.status ? "btn-purple" : "btn-ghost"}" data-sg-status="${esc(st)}" data-sg="${esc(s.id)}"${st === s.status ? " disabled" : ""}>${esc(st)}</button>`).join("")}
+    </div>
+  </div>`;
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch {}
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch {}
+  ta.remove();
+  return ok;
+}
+
+function initSuggestions() {
+  $("#sg-refresh").addEventListener("click", loadSuggestions);
+  $("#sg-type-filters").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-sgtype]");
+    if (b) { sgType = b.dataset.sgtype; renderSuggestions(); }
+  });
+  $("#sg-status-filters").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-sgstatus]");
+    if (b) { sgStatus = b.dataset.sgstatus; renderSuggestions(); }
+  });
+  $("#sg-list").addEventListener("click", async (e) => {
+    const copy = e.target.closest("[data-sg-copy]");
+    if (copy) {
+      const s = suggestions.find((x) => x.id === copy.dataset.sgCopy);
+      if (!s) return;
+      const ok = await copyText(sgCopyText(s));
+      copy.textContent = ok ? "✅ اتنسخ" : "مقدرتش أنسخ";
+      setTimeout(() => { copy.textContent = "📋 انسخي الاقتراح"; }, 2000);
+      return;
+    }
+    const b = e.target.closest("[data-sg-status]");
+    if (!b) return;
+    const s = suggestions.find((x) => x.id === b.dataset.sg);
+    if (!s) return;
+    $$("[data-sg]", b.closest(".sg-card")).forEach((x) => { x.disabled = true; });
+    try {
+      await updateDoc(doc(db, "suggestions", s.id), { status: b.dataset.sgStatus, statusAt: serverTimestamp() });
+      s.status = b.dataset.sgStatus;
+    } catch (err) { console.error(err); alert(errText(err)); }
+    renderSuggestions();
+  });
+}
+
+// =====================================================================
 // التشغيل
 // =====================================================================
 export function initAdminExtras(context) {
   ctx = context;
+  initSuggestions();
 
   $("#orders-filters").addEventListener("click", (e) => {
     const b = e.target.closest("[data-ofilter]");
@@ -354,5 +464,6 @@ export function onAdminTab(tab) {
   if (tab === "orders") loadOrders();
   if (tab === "rewards") { loadLevels(); if (!ordersLoaded) loadOrders().then(renderMonthCustomers); else renderMonthCustomers(); }
   if (tab === "stats") loadStats();
+  if (tab === "suggestions") loadSuggestions();
   if (tab === "products") loadRatingsAdmin();
 }

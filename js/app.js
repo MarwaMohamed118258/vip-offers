@@ -1,7 +1,8 @@
 import { isFirebaseConfigured, WHATSAPP_NUMBER } from "./firebase-config.js";
 import {
   allCategories, esc, safeUrl, safeImage, num, calcTotals, offerStatus, normTitle,
-  monthKey, levelInfo, sortLevels, ratingsIndex, MIN_RATINGS
+  monthKey, levelInfo, sortLevels, ratingsIndex, MIN_RATINGS,
+  aboutField, aboutBodyHtml, SUGGESTION_TYPES, SUGGESTION_OTHER, SUGGESTION_MAX
 } from "./utils.js";
 import {
   getCart, addToCart, setQty, removeFromCart, clearCart, cartCount,
@@ -272,6 +273,7 @@ function rerender() {
   if (r.name === "product") renderProduct(r.id);
   if (r.name === "rewards") renderRewards();
   if (r.name === "about" && state.about) renderAbout();
+  if (r.name === "suggest") renderSuggest();
   renderHomeAlerts();
   if (r.name === "notifications") renderNotif();
   updateCartBadge();
@@ -1018,25 +1020,150 @@ async function loadAbout() {
   renderAbout();
 }
 
-// محتوى الصفحة نفسه (النبذة والكورسات) بيتكتب من لوحة الأدمن بالعربي
+// المحتوى بالعربي والإنجليزي بيتكتب من لوحة الأدمن (وفيه محتوى افتراضي لحد ما يتحفظ)
 function renderAbout() {
   const a = state.about || {};
-  const photo = safeUrl(a.photoUrl);
-  const courses = (a.courses || []).filter(Boolean);
-  const reviews = (a.reviews || []).map(safeUrl).filter(Boolean);
-  const name = a.name && !(isEn() && a.name === "مانجر مروة") ? a.name : t("aboutTitle");
+  // في الإنجليزي: الحقل الإنجليزي لو مكتوب، وإلا العربي
+  const f = (k) => String((isEn() && str(aboutField(a, k + "En"))) || aboutField(a, k) || "").trim();
+  const photo = safeUrl(aboutField(a, "photoUrl"));
+  const reviews = (aboutField(a, "reviews") || []).map(safeUrl).filter(Boolean);
+  const name = f("name") || t("aboutTitle");
+  const title = f("title");
+  const tag = $("#about-tagline");
+  tag.textContent = f("tagline");
+  tag.hidden = !tag.textContent;
+  const body = aboutBodyHtml(f("body"));
   $("#about-body").innerHTML = `
     <div class="panel about-hero">
       ${photo ? `<img class="avatar" src="${esc(photo)}" alt="${esc(name)}">` : `<div class="avatar" style="display:grid;place-items:center;color:var(--purple)"><svg width="64" height="64"><use href="#i-user"/></svg></div>`}
       <h2>${esc(name)}</h2>
-      ${num(a.years) ? `<span class="years-pill">${t("years", { n: num(a.years) })}</span>` : ""}
-      ${a.bio ? `<p style="margin:12px 0 0">${esc(a.bio)}</p>` : ""}
+      ${title ? `<p class="about-title" dir="auto">${esc(title)}</p>` : ""}
     </div>
-    ${courses.length ? `<div class="panel"><h3 class="section-title">${t("coursesTitle")}</h3><ul class="courses">${courses.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}
+    ${body ? `<div class="panel about-text">${body}</div>` : ""}
     ${reviews.length ? `<div class="panel"><h3 class="section-title">${t("reviewsTitle")}</h3><div class="reviews">${reviews.map((r) => `<img src="${esc(r)}" alt="${esc(t("reviewAlt"))}" loading="lazy" data-zoom>`).join("")}</div></div>` : ""}
     <a class="btn btn-green btn-block" style="margin-top:16px" target="_blank" rel="noopener"
-       href="${whatsappLink("أهلاً، عايز أستفسر عن العروض")}"><svg><use href="#i-wa"/></svg>${t("contactWa")}</a>`;
+       href="${whatsappLink("أهلاً، عايز أستفسر عن العروض")}"><svg><use href="#i-wa"/></svg>${t("contactWa")}</a>
+    <a class="btn btn-ghost btn-block" style="margin-top:10px" href="#/suggest">💡 ${t("suggestHave")}</a>`;
 }
+
+// ---------- الاقتراحات ----------
+const SUGGEST_TYPE_KEYS = { "اقتراح عرض": "offer", "منتج جديد": "product", "ملاحظة": "note" };
+const suggestDraft = { type: SUGGESTION_TYPES[0], company: "", other: "", text: "", name: null, phone: null };
+
+function suggestCompanies() {
+  const set = new Set([...state.offers, ...state.products].map((x) => str(x.company)).filter(Boolean));
+  return [...set].sort((a, b) => companyName(a).localeCompare(companyName(b), isEn() ? "en" : "ar"));
+}
+
+function readSuggestForm(box) {
+  if (!$("#sg-text", box)) return;
+  suggestDraft.type = $("[name=sg-type]:checked", box)?.value || suggestDraft.type;
+  suggestDraft.company = $("#sg-company", box).value;
+  suggestDraft.other = $("#sg-other", box).value;
+  suggestDraft.text = $("#sg-text", box).value;
+  suggestDraft.name = $("#sg-name", box).value;
+  suggestDraft.phone = $("#sg-phone", box).value;
+}
+
+function renderSuggest() {
+  const box = $("#suggest-body");
+  readSuggestForm(box); // نحافظ على اللي اتكتب لو اللغة اتغيّرت
+  const c = getCustomer() || {};
+  const d = suggestDraft;
+  const name = d.name ?? c.name ?? "";
+  const phone = d.phone ?? c.phone ?? "";
+  const companies = suggestCompanies();
+  if (d.company && d.company !== SUGGESTION_OTHER && !companies.includes(d.company)) companies.push(d.company);
+  const k = SUGGEST_TYPE_KEYS[d.type] || "note";
+  box.innerHTML = `
+    <form class="panel form-grid suggest-form" novalidate>
+      <fieldset class="field">
+        <legend class="label">${t("sType")}</legend>
+        <div class="seg seg-3" role="radiogroup">${SUGGESTION_TYPES.map((ty) => `
+          <label class="seg-opt${ty === d.type ? " active" : ""}"><input type="radio" name="sg-type" value="${esc(ty)}"${ty === d.type ? " checked" : ""}>${esc(t("sType_" + SUGGEST_TYPE_KEYS[ty]))}</label>`).join("")}
+        </div>
+      </fieldset>
+      <div class="field"><label for="sg-company">${t("sCompany")}</label>
+        <select id="sg-company" class="select">
+          <option value="">${t("sCompanyNone")}</option>
+          ${companies.map((co) => `<option value="${esc(co)}"${co === d.company ? " selected" : ""}>${esc(companyName(co))}</option>`).join("")}
+          <option value="${SUGGESTION_OTHER}"${d.company === SUGGESTION_OTHER ? " selected" : ""}>${t("sOther")}</option>
+        </select>
+        <input id="sg-other" class="input" style="margin-top:8px" maxlength="100" placeholder="${esc(t("sOtherName"))}" value="${esc(d.other)}"${d.company === SUGGESTION_OTHER ? "" : " hidden"}>
+      </div>
+      <div class="field"><label for="sg-text">${t("sText")} *</label>
+        <textarea id="sg-text" class="textarea" required maxlength="${SUGGESTION_MAX}" placeholder="${esc(t("sPh_" + k))}">${esc(d.text)}</textarea>
+        <div class="suggest-hint"><span>${t("sNote")}</span><span class="meta" id="sg-count" dir="ltr">${d.text.length}/${SUGGESTION_MAX}</span></div>
+      </div>
+      <div class="field"><label for="sg-name">${t("pharmName")}</label><input id="sg-name" class="input" maxlength="100" autocomplete="organization" value="${esc(name)}"></div>
+      <div class="field"><label for="sg-phone">${t("phone")}</label><input id="sg-phone" class="input" type="tel" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="01xxxxxxxxx" value="${esc(phone)}"></div>
+      <p class="error" id="sg-error" hidden></p>
+      <button type="submit" class="btn btn-purple btn-block">💡 ${t("sSend")}</button>
+    </form>`;
+}
+
+function resetSuggestDraft() {
+  Object.assign(suggestDraft, { type: SUGGESTION_TYPES[0], company: "", other: "", text: "", name: null, phone: null });
+}
+
+async function sendSuggestion(form) {
+  const err = $("#sg-error", form);
+  const fail = (msg) => { err.hidden = false; err.textContent = msg; };
+  err.hidden = true;
+  readSuggestForm(form);
+  const d = suggestDraft;
+  const text = d.text.trim();
+  if (!text) { fail(t("sTextRequired")); $("#sg-text", form).focus(); return; }
+  const phone = cleanPhone(d.phone || "");
+  if (phone && (!PHONE_RE.test(phone) || phone.replace(/\D/g, "").length < 8)) { fail(t("phoneInvalid")); return; }
+  const company = d.company === SUGGESTION_OTHER ? (d.other.trim() || SUGGESTION_OTHER) : d.company;
+  const c = getCustomer();
+  const btn = $("button[type=submit]", form);
+  btn.disabled = true;
+  try {
+    const { db, collection, addDoc, serverTimestamp } = await firestore();
+    const data = {
+      type: d.type, company: company.slice(0, 100), text: text.slice(0, SUGGESTION_MAX),
+      name: String(d.name || "").trim().slice(0, 100), phone,
+      status: "جديد", createdAt: serverTimestamp(), lang: isEn() ? "en" : "ar"
+    };
+    if (c?.id) data.customerId = c.id;
+    if (c?.area) data.area = c.area.slice(0, 100);
+    await addDoc(collection(db, "suggestions"), data);
+  } catch (e) {
+    console.error(e);
+    btn.disabled = false;
+    fail(t("sError"));
+    return;
+  }
+  resetSuggestDraft();
+  $("#suggest-body").innerHTML = "";
+  renderSuggest();
+  openModal(`
+    <div class="thanks">
+      <div class="heart">🌟</div>
+      <p>${t("sThanks")}</p>
+      <button type="button" class="btn btn-purple btn-block" data-close>${t("ok")}</button>
+    </div>`);
+}
+
+$("#suggest-body").addEventListener("change", (e) => {
+  const box = $("#suggest-body");
+  if (e.target.name === "sg-type") {
+    readSuggestForm(box);
+    $$(".seg-opt", box).forEach((l) => l.classList.toggle("active", $("input", l).checked));
+    $("#sg-text", box).placeholder = t("sPh_" + (SUGGEST_TYPE_KEYS[suggestDraft.type] || "note"));
+  }
+  if (e.target.id === "sg-company") {
+    const other = $("#sg-other", box);
+    other.hidden = e.target.value !== SUGGESTION_OTHER;
+    if (!other.hidden) other.focus();
+  }
+});
+$("#suggest-body").addEventListener("input", (e) => {
+  if (e.target.id === "sg-text") $("#sg-count").textContent = `${e.target.value.length}/${SUGGESTION_MAX}`;
+});
+$("#suggest-body").addEventListener("submit", (e) => { e.preventDefault(); sendSuggestion(e.target); });
 
 // ---------- الإشعارات ----------
 function renderNotif(status = getStatus()) {
@@ -1061,7 +1188,7 @@ function currentRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   if (h.startsWith("offer/")) return { name: "offer", id: decodeURIComponent(h.slice(6)) };
   if (h.startsWith("product/")) return { name: "product", id: decodeURIComponent(h.slice(8)) };
-  if (["notifications", "about", "cart", "products", "rewards"].includes(h)) return { name: h };
+  if (["notifications", "about", "cart", "products", "rewards", "suggest"].includes(h)) return { name: h };
   return { name: "home" };
 }
 
@@ -1078,6 +1205,7 @@ function route() {
   if (r.name === "cart") renderCart();
   if (r.name === "rewards") renderRewards();
   if (r.name === "about" && !state.about) loadAbout();
+  if (r.name === "suggest") renderSuggest();
   if (r.name === "notifications") renderNotif();
   window.scrollTo(0, 0);
 }

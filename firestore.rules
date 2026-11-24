@@ -77,6 +77,26 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ---------- الاقتراحات: أي حد يبعت اقتراح (حقول متراجعة)، والأدمن بس يشوف ويعدّل ----------
+    function validSuggestion(d) {
+      return d.keys().hasAll(["type", "text", "status", "createdAt"])
+        && d.keys().hasOnly(["type", "company", "text", "name", "phone", "area", "customerId", "status", "createdAt", "lang"])
+        && d.type in ["اقتراح عرض", "منتج جديد", "ملاحظة"]
+        && isStr(d.text, 1, 1000)
+        && (!("company" in d) || isStr(d.company, 0, 100))
+        && (!("name" in d) || isStr(d.name, 0, 100))
+        && (!("area" in d) || isStr(d.area, 0, 100))
+        && (!("phone" in d) || (d.phone is string && (d.phone == "" || d.phone.matches("^[+0-9 ]{8,20}$"))))
+        && (!("customerId" in d) || (d.customerId is string && d.customerId.matches("^[A-Za-z0-9]{24,64}$")))
+        && (!("lang" in d) || d.lang in ["ar", "en"])
+        && d.status == "جديد"
+        && d.createdAt == request.time;
+    }
+    match /suggestions/{id} {
+      allow create: if validSuggestion(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
     // ---------- عدّاد مشاهدات العروض: زيادة 1 بس كل مرة، والأدمن بس يقرأ ----------
     match /views/{offerId} {
       allow create: if request.resource.data.keys().hasOnly(["count"]) && request.resource.data.count == 1;

@@ -39,7 +39,23 @@
         <button class="btn btn-ghost" data-tab="orders">الطلبات</button>
         <button class="btn btn-ghost" data-tab="rewards">المكافآت</button>
         <button class="btn btn-ghost" data-tab="stats">الإحصائيات</button>
+        <button class="btn btn-ghost" data-tab="suggestions">الاقتراحات</button>
         <button class="btn btn-ghost" data-tab="about">مانجر مروة</button>
+      </div>
+
+      <!-- الاقتراحات -->
+      <div id="tab-suggestions" hidden>
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h2 class="section-title" style="margin:0">💡 اقتراحات العملاء</h2>
+            <button type="button" id="sg-refresh" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+          </div>
+          <div class="sg-filters">
+            <div id="sg-type-filters" class="chips"></div>
+            <div id="sg-status-filters" class="chips"></div>
+          </div>
+          <div id="sg-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
       </div>
 
       <!-- الطلبات -->
@@ -240,11 +256,16 @@
       <div id="tab-about" hidden>
         <div class="panel">
           <form id="about-form" class="form-grid">
-            <div class="field"><label for="a-name">الاسم</label><input id="a-name" class="input" placeholder="مانجر مروة"></div>
+            <p class="meta" style="margin:0">اللي هنا بيظهر للعملاء في صفحة «مانجر مروة». الخانات الإنجليزي للوضع الإنجليزي (لو فاضية بيظهر العربي).</p>
+            <div class="field"><label for="a-name">الاسم</label><input id="a-name" class="input"></div>
+            <div class="field"><label for="a-name-en">الاسم بالإنجليزي</label><input id="a-name-en" class="input" dir="ltr"></div>
+            <div class="field"><label for="a-title">المسمى الوظيفي</label><input id="a-title" class="input" dir="auto"></div>
+            <div class="field"><label for="a-title-en">المسمى الوظيفي بالإنجليزي</label><input id="a-title-en" class="input" dir="ltr"></div>
+            <div class="field"><label for="a-tagline">الجملة المميزة (بتظهر بالأصفر)</label><textarea id="a-tagline" class="textarea" style="min-height:70px"></textarea></div>
+            <div class="field"><label for="a-tagline-en">الجملة المميزة بالإنجليزي</label><textarea id="a-tagline-en" class="textarea" dir="ltr" style="min-height:70px"></textarea></div>
+            <div class="field"><label for="a-body">النبذة (كل سطر لوحده، والسطر اللي يبدأ بـ ✔️ بيظهر في قائمة)</label><textarea id="a-body" class="textarea" style="min-height:220px"></textarea></div>
+            <div class="field"><label for="a-body-en">النبذة بالإنجليزي</label><textarea id="a-body-en" class="textarea" dir="ltr" style="min-height:220px"></textarea></div>
             <div class="field"><label for="a-photo">رابط الصورة</label><input id="a-photo" class="input" type="url" dir="ltr" placeholder="https://..."></div>
-            <div class="field"><label for="a-bio">نبذة قصيرة</label><textarea id="a-bio" class="textarea"></textarea></div>
-            <div class="field"><label for="a-years">سنين الخبرة</label><input id="a-years" class="input" type="number" min="0" inputmode="numeric"></div>
-            <div class="field"><label for="a-courses">الكورسات (كل كورس في سطر)</label><textarea id="a-courses" class="textarea"></textarea></div>
             <div class="field"><label for="a-reviews">روابط صور آراء العملاء (كل رابط في سطر، ومن غير أسماء العملاء)</label><textarea id="a-reviews" class="textarea" dir="ltr"></textarea></div>
             <button type="submit" class="btn btn-purple btn-block">حفظ الصفحة</button>
             <p id="about-msg" class="error" hidden></p>

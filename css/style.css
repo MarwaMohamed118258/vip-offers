@@ -467,3 +467,36 @@ table.items tfoot td { font-weight: 900; background: #fbf8fe; border-bottom: 0; 
 .bar { height: 12px; background: var(--purple-soft); border-radius: 999px; overflow: hidden; }
 .bar span { display: block; height: 100%; background: var(--purple); border-radius: 999px; }
 .bar-val { font-weight: 700; white-space: nowrap; }
+
+/* ---------- Header 💡 button ---------- */
+.icon-btn { display: inline-grid; place-items: center; text-decoration: none; font-size: 19px; padding: 0 8px; }
+
+/* ---------- Suggestions ---------- */
+.suggest-form { margin-top: 16px; }
+.suggest-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.suggest-form legend { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: var(--purple); padding: 0; }
+.seg.seg-3 { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
+.field .seg-opt {
+  display: grid; place-items: center; min-height: 48px; margin: 0; padding: 6px 4px; border-radius: 12px;
+  color: var(--purple); font-weight: 800; font-size: 14.5px; line-height: 1.3; text-align: center; cursor: pointer;
+}
+.seg-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.field .seg-opt.active { background: var(--purple); color: #fff; }
+.seg-opt:focus-within { outline: 3px solid var(--yellow); outline-offset: 1px; }
+.suggest-form .textarea { min-height: 130px; }
+.suggest-form ::placeholder { color: #9a9a9a; opacity: 1; }
+.suggest-hint { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; color: var(--purple); font-weight: 700; font-size: 14.5px; }
+
+/* ---------- About ---------- */
+.about-title { margin: 4px 0 0; color: var(--muted); font-weight: 700; font-size: 15px; }
+.about-text p { margin: 0 0 10px; line-height: 1.9; }
+.about-text p:last-child { margin-bottom: 0; }
+.checklist { list-style: none; margin: 4px 0 12px; padding: 0; display: grid; gap: 8px; }
+.checklist li { position: relative; padding-inline-start: 30px; line-height: 1.8; }
+.checklist li::before { content: "✔"; position: absolute; inset-inline-start: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; font-size: 13px; display: grid; place-items: center; }
+
+/* ---------- Admin: suggestions ---------- */
+.sg-card .sg-text { margin: 0; white-space: pre-wrap; font-size: 16px; line-height: 1.8; }
+.sg-filters { display: grid; gap: 6px; margin-bottom: 10px; }
+.status-btns.sg-st .btn { font-size: 12.5px; }
+.suggest-hint span:first-child { flex: 1; }

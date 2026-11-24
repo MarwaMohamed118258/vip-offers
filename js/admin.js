@@ -1,7 +1,8 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
 import {
   allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
-  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory, planEnglishNames
+  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory, planEnglishNames,
+  aboutField
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 import { initAdminExtras, onAdminTab } from "./admin-extra.js";
@@ -102,7 +103,7 @@ $("#logout").addEventListener("click", () => signOut(auth));
 // ---------- التبويبات ----------
 $$("[data-tab]").forEach((b) => b.addEventListener("click", () => {
   $$("[data-tab]").forEach((x) => x.className = "btn " + (x === b ? "btn-purple" : "btn-ghost"));
-  for (const t of ["offers", "products", "orders", "rewards", "stats", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
+  for (const t of ["offers", "products", "orders", "rewards", "stats", "suggestions", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
   onAdminTab(b.dataset.tab);
 }));
 
@@ -885,30 +886,31 @@ $("#import-file").addEventListener("change", async (e) => {
 // =====================================================================
 const lines = (v) => v.split("\n").map((s) => s.trim()).filter(Boolean);
 
+// خانة في الفورم ↔ حقل في settings/about (لو المستند لسه متحفظش بيظهر المحتوى الافتراضي)
+const ABOUT_TEXT = { "a-name": "name", "a-name-en": "nameEn", "a-title": "title", "a-title-en": "titleEn",
+  "a-tagline": "tagline", "a-tagline-en": "taglineEn", "a-body": "body", "a-body-en": "bodyEn" };
+
 async function loadAbout() {
+  let a = {};
   try {
     const snap = await getDoc(doc(db, "settings", "about"));
-    const a = snap.exists() ? snap.data() : {};
-    $("#a-name").value = a.name || "";
-    $("#a-photo").value = a.photoUrl || "";
-    $("#a-bio").value = a.bio || "";
-    $("#a-years").value = a.years ?? "";
-    $("#a-courses").value = (a.courses || []).join("\n");
-    $("#a-reviews").value = (a.reviews || []).join("\n");
+    a = snap.exists() ? snap.data() : {};
   } catch (err) { console.error(err); }
+  for (const [id, k] of Object.entries(ABOUT_TEXT)) $("#" + id).value = aboutField(a, k) || "";
+  $("#a-photo").value = aboutField(a, "photoUrl") || "";
+  $("#a-reviews").value = (aboutField(a, "reviews") || []).join("\n");
 }
 
 $("#about-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const msg = $("#about-msg");
   const btn = e.submitter; btn.disabled = true;
+  const data = {};
+  for (const [id, k] of Object.entries(ABOUT_TEXT)) data[k] = lines($("#" + id).value).join("\n");
   try {
     await setDoc(doc(db, "settings", "about"), {
-      name: $("#a-name").value.trim(),
+      ...data,
       photoUrl: safeUrl($("#a-photo").value),
-      bio: $("#a-bio").value.trim(),
-      years: num($("#a-years").value),
-      courses: lines($("#a-courses").value),
       reviews: lines($("#a-reviews").value).map(safeUrl).filter(Boolean),
       updatedAt: serverTimestamp()
     });
