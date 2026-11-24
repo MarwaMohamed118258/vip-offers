@@ -84,6 +84,21 @@
             <button type="button" id="import-products-btn" class="btn btn-sm btn-purple">استيراد منتجات من ملف</button>
             <input type="file" id="import-products-file" accept=".json,application/json" hidden>
           </div>
+          <div class="calc-box" style="margin-bottom:10px">
+            <div class="row-gap" style="justify-content:space-between;align-items:center">
+              <div>
+                <b>صور المنتجات من ملف</b>
+                <p class="meta" style="margin:0">ملف images.json بالشكل ده {"اسم المنتج بالعربي": "رابط الصورة"}</p>
+              </div>
+              <button type="button" id="import-images-btn" class="btn btn-sm btn-purple">استيراد صور المنتجات</button>
+              <input type="file" id="import-images-file" accept=".json,application/json" hidden>
+            </div>
+            <label class="meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:700">
+              <input type="checkbox" id="images-overwrite" style="width:20px;height:20px">
+              استبدلي الصور الموجودة كمان (من غيرها: بنحط صور للمنتجات اللي ملهاش صورة بس)
+            </label>
+          </div>
+          <div id="import-images-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
           <div id="import-products-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
           <input id="products-search" class="input" type="search" placeholder="ابحثي باسم المنتج أو الشركة" style="margin-bottom:10px">
           <div id="admin-products" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>

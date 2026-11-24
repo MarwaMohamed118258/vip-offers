@@ -16,7 +16,7 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const WELCOME_KEY = "vip_welcomed";
 const CACHE_KEY = "vip_offers_cache";
-const PRODUCTS_KEY = "vip_products_info";
+const PRODUCTS_KEY = "vip_products_v2";
 const CATS_KEY = "vip_categories";
 const NAMES_KEY = "vip_names_en";
 const ALL = "__all";
@@ -26,7 +26,8 @@ const state = {
   offers: [], loaded: false, fresh: false, company: "", category: ALL, search: "",
   kind: null, // "single" = عروض منتج واحد، "bundle" = مجموعات مشكّلة
   about: null,
-  productInfo: new Map(),            // productId → { image, nameEn }
+  products: [], productsLoaded: false, productSearch: "",
+  productById: new Map(), productByName: new Map(),
   savedCategories: [],
   names: { categories: {}, companies: {} } // الأسماء الإنجليزي للأقسام والشركات
 };
@@ -57,7 +58,10 @@ const str = (v) => (typeof v === "string" ? v.trim() : "");
 const offerTitle = (o) => (isEn() && str(o.titleEn)) || o.name || "";
 const companyName = (c) => (isEn() && str(state.names.companies[c])) || c || "";
 const categoryName = (c) => (isEn() && str(state.names.categories[c])) || c || "";
-const productNameEn = (it) => str(it.nameEn) || str(state.productInfo.get(it.productId)?.nameEn);
+// المنتج اللي في العرض: بالـ productId، ولو مش مربوط بالاسم
+const productFor = (it) => state.productById.get(it.productId) || state.productByName.get(normTitle(it.name));
+const productNameEn = (it) => str(it.nameEn) || str(productFor(it)?.nameEn);
+const productName = (p) => (isEn() && str(p.nameEn)) || p.name || "";
 const itemName = (it) => (isEn() && productNameEn(it)) || it.name || "";
 
 // ---------- العروض ----------
@@ -87,7 +91,7 @@ async function loadOffers() {
     if (!state.loaded) state.error = e.message === "not-configured" ? "notConfigured" : "loadError";
   }
   rerender();
-  loadProductInfo();
+  loadProducts();
   loadSettings();
 }
 
@@ -126,38 +130,48 @@ function pruneCart() {
   }
 }
 
-// ---------- بيانات المنتجات (الصور والأسماء الإنجليزي) ----------
-// الصور المرفوعة محفوظة في مستند المنتج (products/{id})، فبنجيب المنتجات اللي في العروض بس
+// ---------- المنتجات (كتالوج «منتجاتنا» + صور المنتجات جوّه العروض) ----------
 function itemImage(it) {
-  return safeImage(it.image) || safeImage(state.productInfo.get(it.productId)?.image);
+  return safeImage(it.image) || safeImage(productFor(it)?.image);
 }
 
-async function loadProductInfo() {
-  if (!state.productInfo.size) {
-    try { state.productInfo = new Map(readJSON(PRODUCTS_KEY, [])); } catch {}
-    if (state.productInfo.size) rerender();
+function setProducts(list) {
+  state.products = list;
+  state.productById = new Map(list.map((p) => [p.id, p]));
+  state.productByName = new Map(list.map((p) => [normTitle(p.name), p]));
+}
+
+async function loadProducts() {
+  if (!state.products.length) {
+    const cached = readJSON(PRODUCTS_KEY, null);
+    if (Array.isArray(cached) && cached.length) { setProducts(cached); state.productsLoaded = true; rerender(); }
   }
-  const ids = [...new Set(visibleOffers().flatMap((o) => (o.products || [])
-    .filter((it) => it.productId).map((it) => it.productId)))];
-  if (!ids.length) return;
   try {
-    const { db, collection, getDocs, query, where, documentId } = await firestore();
-    const fresh = new Map();
-    for (let i = 0; i < ids.length; i += 30) {
-      const snap = await getDocs(query(collection(db, "products"), where(documentId(), "in", ids.slice(i, i + 30))));
-      if (snap.metadata.fromCache) throw new Error("offline");
-      snap.forEach((d) => {
-        const p = d.data();
-        fresh.set(d.id, { image: safeImage(p.image), nameEn: str(p.nameEn) });
-      });
-    }
-    state.productInfo = fresh;
-    const json = JSON.stringify([...fresh]);
-    if (json.length < 2_000_000) store.set(PRODUCTS_KEY, json); // نحفظها عشان تظهر بسرعة ومن غير نت
-    rerender();
+    const { db, collection, getDocs, query, orderBy } = await firestore();
+    const snap = await getDocs(query(collection(db, "products"), orderBy("name")));
+    if (snap.metadata.fromCache) throw new Error("offline");
+    setProducts(snap.docs.map((d) => {
+      const p = d.data();
+      return {
+        id: d.id, name: str(p.name), nameEn: str(p.nameEn), company: str(p.company), category: str(p.category),
+        publicPrice: num(p.publicPrice), image: safeImage(p.image)
+      };
+    }));
+    state.productsLoaded = true;
+    // نحفظ نسخة عشان تفتح بسرعة ومن غير نت (من غير الصور المرفوعة لو الحجم كبير)
+    let json = JSON.stringify(state.products);
+    if (json.length > 2_000_000) json = JSON.stringify(state.products.map((p) => (p.image.startsWith("data:") ? { ...p, image: "" } : p)));
+    if (json.length < 2_000_000) store.set(PRODUCTS_KEY, json);
   } catch (e) {
-    console.warn("products", e);
+    console.warn("products", e.message || e);
+    state.productsLoaded = true;
   }
+  rerender();
+}
+
+// صورة بتتحمّل لما تقرّب تظهر على الشاشة بس (عشان التطبيق يفضل سريع)
+function lazyImg(src, cls = "", alt = "", size = 200) {
+  return `<img class="${cls}" src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" width="${size}" height="${size}">`;
 }
 
 function rerender() {
@@ -165,6 +179,8 @@ function rerender() {
   const r = currentRoute();
   if (r.name === "offer") renderOffer(r.id);
   if (r.name === "cart") renderCart();
+  if (r.name === "products") renderCatalog();
+  if (r.name === "product") renderProduct(r.id);
   if (r.name === "about" && state.about) renderAbout();
   if (r.name === "notifications") renderNotif();
   updateCartBadge();
@@ -189,7 +205,7 @@ function thumbs(o) {
   const imgs = (o.products || []).map(itemImage).filter(Boolean);
   if (!imgs.length) return "";
   const shown = imgs.slice(0, 4);
-  return `<div class="thumbs">${shown.map((src) => `<img src="${esc(src)}" alt="" loading="lazy">`).join("")}${imgs.length > 4 ? `<span class="more">+${imgs.length - 4}</span>` : ""}</div>`;
+  return `<div class="thumbs">${shown.map((src) => lazyImg(src, "", "", 58)).join("")}${imgs.length > 4 ? `<span class="more">+${imgs.length - 4}</span>` : ""}</div>`;
 }
 
 // ---------- البحث (بالعربي والإنجليزي) ----------
@@ -317,7 +333,7 @@ function renderOffer(id) {
   const rows = (o.products || []).map((p) => {
     const q = Math.max(1, num(p.qty) || 1);
     return `<tr>
-      <td><div class="item-cell">${itemImage(p) ? `<img src="${esc(itemImage(p))}" alt="" loading="lazy">` : ""}<span>${esc(itemName(p))}</span></div></td>
+      <td><div class="item-cell">${itemImage(p) ? lazyImg(itemImage(p), "", "", 44) : ""}<span>${esc(itemName(p))}</span></div></td>
       <td class="num">${q}</td>
       <td class="num old">${money(num(p.publicPrice) * q)}</td>
       <td class="num new">${money(num(p.offerPrice) * q)}</td>
@@ -388,6 +404,83 @@ function renderOffer(id) {
   update();
 }
 
+// ---------- منتجاتنا ----------
+function productMatches(p, q) {
+  const words = normTitle(q).split(" ").filter(Boolean);
+  if (!words.length) return true;
+  const h = normTitle([p.name, p.nameEn, p.company, state.names.companies[p.company], p.category, state.names.categories[p.category]].filter(Boolean).join(" | "));
+  return words.every((w) => h.includes(w));
+}
+
+function productCard(p) {
+  const img = safeImage(p.image);
+  return `
+  <a class="product-card" href="#/product/${encodeURIComponent(p.id)}">
+    <div class="pimg">${img ? lazyImg(img, "", productName(p), 200) : `<svg width="40" height="40"><use href="#i-gift"/></svg>`}</div>
+    <div class="pbody">
+      <b>${esc(productName(p))}</b>
+      <span class="meta">${esc(companyName(p.company))}</span>
+      ${num(p.publicPrice) ? `<span class="pprice">${money(p.publicPrice)}</span>` : ""}
+    </div>
+  </a>`;
+}
+
+function renderCatalog() {
+  const body = $("#catalog-body");
+  if (!state.productsLoaded) { body.innerHTML = `<div class="skeleton" style="margin-top:16px"></div>`; return; }
+  const list = state.products.filter((p) => productMatches(p, state.productSearch));
+  if (!list.length) {
+    body.innerHTML = `<p class="state-msg">${state.productSearch.trim() ? t("noResults") : t("noProducts")}</p>`;
+    return;
+  }
+  // متجمّعين حسب القسم بنفس ترتيب الأقسام، والمنتجات من غير قسم في الآخر
+  const order = allCategories(state.products, state.savedCategories);
+  const groups = new Map(order.map((c) => [c, []]));
+  const other = [];
+  for (const p of list) (groups.get(p.category) || other).push(p);
+  const sections = [...groups.entries()].filter(([, ps]) => ps.length);
+  if (other.length) sections.push(["", other]);
+  body.innerHTML = sections.map(([c, ps]) => `
+    <section class="cat-section">
+      <h2 class="section-title">${esc(c ? categoryName(c) : t("otherProducts"))} <span class="meta">(${ps.length})</span></h2>
+      <div class="product-grid">${ps.map(productCard).join("")}</div>
+    </section>`).join("");
+}
+
+function offersWithProduct(p) {
+  const key = normTitle(p.name);
+  return visibleOffers().filter((o) => (o.products || []).some((it) => it.productId === p.id || normTitle(it.name) === key));
+}
+
+function renderProduct(id) {
+  const body = $("#product-body");
+  const p = state.productById.get(id);
+  if (!p) {
+    $("#p-title").textContent = t("navProducts");
+    $("#p-sub").textContent = "";
+    body.innerHTML = state.productsLoaded
+      ? `<p class="state-msg">${t("productGone")}</p><a class="btn btn-purple btn-block" href="#/products">${t("backToProducts")}</a>`
+      : `<div class="skeleton" style="margin-top:16px"></div>`;
+    return;
+  }
+  const img = safeImage(p.image);
+  const offers = offersWithProduct(p);
+  $("#p-title").textContent = productName(p);
+  $("#p-sub").textContent = [companyName(p.company), p.category ? categoryName(p.category) : ""].filter(Boolean).join(" · ");
+  body.innerHTML = `
+    <div class="panel product-hero">
+      ${img ? lazyImg(img, "big", productName(p), 400) : ""}
+      <h2>${esc(productName(p))}</h2>
+      ${isEn() && p.nameEn && p.name ? `<p class="meta" lang="ar" dir="rtl">${esc(p.name)}</p>` : ""}
+      <div class="company" style="justify-content:center"><svg><use href="#i-check"/></svg>${esc(companyName(p.company))}</div>
+      ${num(p.publicPrice) ? `<p class="pprice big">${t("publicPrice")}: ${money(p.publicPrice)}</p>` : ""}
+    </div>
+    <h2 class="section-title" style="margin-top:18px">${t("productOffers")} <span class="meta">(${offers.length})</span></h2>
+    ${offers.length
+      ? `<div class="offers-list">${offers.map(offerCard).join("")}</div>`
+      : `<p class="state-msg">${t("noProductOffers")}</p>`}`;
+}
+
 // ---------- السلة ----------
 function cartLines() {
   return getCart().map((x) => {
@@ -436,7 +529,7 @@ function renderCart() {
         return `
         <div class="cart-item">
           <div class="top">
-            ${img ? `<img class="thumb" src="${esc(img)}" alt="">` : ""}
+            ${img ? lazyImg(img, "thumb", "", 56) : ""}
             <div class="info">
               <b>${esc(offerTitle(l.offer))}</b>
               <div class="meta">${esc(companyName(l.offer.company))} · ${t("perCourse", { x: money(l.unitPrice) })}</div>
@@ -627,7 +720,8 @@ function renderNotif(status = getStatus()) {
 function currentRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   if (h.startsWith("offer/")) return { name: "offer", id: decodeURIComponent(h.slice(6)) };
-  if (["notifications", "about", "cart"].includes(h)) return { name: h };
+  if (h.startsWith("product/")) return { name: "product", id: decodeURIComponent(h.slice(8)) };
+  if (["notifications", "about", "cart", "products"].includes(h)) return { name: h };
   return { name: "home" };
 }
 
@@ -636,8 +730,11 @@ function route() {
   $$(".view").forEach((v) => v.classList.remove("active"));
   $(`#view-${r.name}`).classList.add("active");
   $$("[data-nav]").forEach((a) =>
-    a.classList.toggle("active", a.dataset.nav === r.name || (r.name === "offer" && a.dataset.nav === "home")));
+    a.classList.toggle("active", a.dataset.nav === r.name ||
+      (r.name === "offer" && a.dataset.nav === "home") || (r.name === "product" && a.dataset.nav === "products")));
   if (r.name === "offer") renderOffer(r.id);
+  if (r.name === "products") renderCatalog();
+  if (r.name === "product") renderProduct(r.id);
   if (r.name === "cart") renderCart();
   if (r.name === "about" && !state.about) loadAbout();
   if (r.name === "notifications") renderNotif();
@@ -702,6 +799,7 @@ document.addEventListener("click", async (e) => {
 
 $("#company-filter").addEventListener("change", (e) => { state.company = e.target.value; renderHome(); });
 $("#search").addEventListener("input", (e) => { state.search = e.target.value; renderHome(); });
+$("#products-search").addEventListener("input", (e) => { state.productSearch = e.target.value; renderCatalog(); });
 
 $("#welcome-btn").addEventListener("click", async (e) => {
   const btn = e.currentTarget;

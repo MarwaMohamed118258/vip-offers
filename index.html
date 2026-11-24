@@ -29,6 +29,7 @@
     <symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
   </svg>
 
@@ -100,6 +101,33 @@
       <div class="container" id="d-body"></div>
     </section>
 
+    <!-- منتجاتنا -->
+    <section id="view-products" class="view">
+      <header class="app-header">
+        <div class="container row">
+          <div class="brand-badge">VIP</div>
+          <div class="grow"><h1 data-i18n="navProducts">منتجاتنا</h1><p data-i18n="productsSub">كل المنتجات بسعر الجمهور</p></div>
+          <button type="button" class="lang-btn" data-lang-toggle>EN</button>
+        </div>
+      </header>
+      <div class="container">
+        <input id="products-search" class="select search" type="search" data-i18n-ph="searchProductsPh" placeholder="دوّر على منتج أو شركة" autocomplete="off" style="margin-top:16px">
+        <div id="catalog-body"></div>
+      </div>
+    </section>
+
+    <!-- تفاصيل المنتج -->
+    <section id="view-product" class="view">
+      <header class="app-header">
+        <div class="container row">
+          <button class="back-btn" type="button" onclick="history.length > 1 ? history.back() : (location.hash = '#/products')" aria-label="رجوع" data-i18n-aria="back"><svg><use href="#i-back"/></svg></button>
+          <div class="grow"><h1 id="p-title">منتجاتنا</h1><p id="p-sub"></p></div>
+          <button type="button" class="lang-btn" data-lang-toggle>EN</button>
+        </div>
+      </header>
+      <div class="container" id="product-body"></div>
+    </section>
+
     <!-- السلة -->
     <section id="view-cart" class="view">
       <header class="app-header">
@@ -146,6 +174,7 @@
 
   <nav class="bottom-nav" aria-label="القائمة" data-i18n-aria="navMenu">
     <a href="#/" data-nav="home"><svg><use href="#i-gift"/></svg><span data-i18n="navOffers">العروض</span></a>
+    <a href="#/products" data-nav="products"><svg><use href="#i-box"/></svg><span data-i18n="navProducts">منتجاتنا</span></a>
     <a href="#/cart" data-nav="cart">
       <span class="nav-icon"><svg><use href="#i-cart"/></svg><span class="nav-badge" id="cart-count" hidden>0</span></span><span data-i18n="navCart">السلة</span>
     </a>

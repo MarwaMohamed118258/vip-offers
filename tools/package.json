@@ -1,0 +1,9 @@
+{
+  "name": "vip-offers-tools",
+  "private": true,
+  "description": "Local helper scripts (not deployed)",
+  "type": "module",
+  "devDependencies": {
+    "puppeteer-core": "22.15.0"
+  }
+}

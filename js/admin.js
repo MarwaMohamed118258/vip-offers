@@ -385,6 +385,63 @@ $("#import-products-file").addEventListener("change", async (e) => {
   } finally { btn.disabled = false; }
 });
 
+// ---------- استيراد صور المنتجات (images.json) ----------
+$("#import-images-btn").addEventListener("click", () => $("#import-images-file").click());
+$("#import-images-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const show = resultBox($("#import-images-result"));
+  const btn = $("#import-images-btn");
+  const overwrite = $("#images-overwrite").checked;
+  let map;
+  try {
+    map = JSON.parse((await file.text()).replace(/^\uFEFF/, ""));
+    if (!map || typeof map !== "object" || Array.isArray(map)) throw new Error("shape");
+  } catch {
+    return show(esc('الملف مش مظبوط: لازم يكون JSON بالشكل ده {"اسم المنتج": "https://…"}'), false);
+  }
+
+  btn.disabled = true;
+  show("جاري الاستيراد…");
+  try {
+    if (!(await loadProducts())) return show("مقدرناش نحمّل المنتجات الحالية، جرّبي تاني", false);
+    const byName = new Map(products.map((p) => [normTitle(p.name), p]));
+    const updates = [], notFound = [], invalid = [];
+    let skipped = 0, same = 0;
+    const seen = new Set();
+    for (const [name, value] of Object.entries(map)) {
+      const url = safeUrl(value); // روابط صور بس (https)، مش data URLs
+      if (!url) { invalid.push(name); continue; }
+      const p = byName.get(normTitle(name));
+      if (!p) { notFound.push(name); continue; }
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      if (p.image === url) { same++; continue; }
+      if (p.image && !overwrite) { skipped++; continue; }
+      updates.push([p.id, url]);
+    }
+    for (let i = 0; i < updates.length; i += 400) {
+      const batch = writeBatch(db);
+      updates.slice(i, i + 400).forEach(([id, url]) =>
+        batch.update(doc(db, "products", id), { image: url, updatedAt: serverTimestamp() }));
+      await batch.commit();
+    }
+    await loadProducts();
+    const withoutImage = products.filter((p) => !p.image).length;
+    const list = (arr) => esc(arr.slice(0, 15).join("، ")) + (arr.length > 15 ? ` و${arr.length - 15} كمان` : "");
+    show(`
+      <div style="color:var(--green)">✅ اتحطّت صور لـ ${updates.length} منتج</div>
+      ${skipped ? `<div>⏭️ ${skipped} منتج عنده صورة بالفعل (علّمي «استبدلي الصور الموجودة» لو عايزة تغيّريها)</div>` : ""}
+      ${same ? `<div>✔️ ${same} منتج صورته نفس اللي في الملف</div>` : ""}
+      ${notFound.length ? `<div class="meta" style="color:var(--red)">أسماء ملقيناش منتج بيها (${notFound.length}): ${list(notFound)}</div>` : ""}
+      ${invalid.length ? `<div class="meta" style="color:var(--red)">روابط مش صالحة (${invalid.length}): ${list(invalid)}</div>` : ""}
+      <div class="meta">المنتجات اللي لسه من غير صورة: ${withoutImage}</div>`);
+  } catch (err) {
+    console.error(err); show(esc(errText(err)), false);
+  } finally { btn.disabled = false; }
+});
+
 // =====================================================================
 // فورم العرض
 // =====================================================================
