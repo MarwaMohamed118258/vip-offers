@@ -1,7 +1,7 @@
 import { isFirebaseConfigured } from "./firebase-config.js";
 import {
   allCategories, normTitle, mapImportedOffer, mapImportedProduct, splitOfferTotal, offerItem,
-  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory
+  SAMPLE_OFFER, esc, money, num, calcTotals, safeUrl, safeImage, offerStatus, endLabel, isDateStr, matchCategory, planEnglishNames
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 
@@ -16,7 +16,7 @@ if (!isFirebaseConfigured()) {
 const { db, auth } = await import("./firebase.js");
 const {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy, serverTimestamp,
-  writeBatch, Timestamp, arrayUnion
+  writeBatch, Timestamp, arrayUnion, deleteField
 } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 const { signInWithEmailAndPassword, onAuthStateChanged, signOut } =
   await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
@@ -110,12 +110,49 @@ const NEW_CAT = "__new";
 let savedCategories = []; // الأقسام اللي اتضافت من هنا (settings/categories)
 const categoryList = () => allCategories([...offers, ...products], savedCategories);
 
+let namesEn = { categories: {}, companies: {} }; // الأسماء الإنجليزي (settings/names)
+
 async function loadCategories() {
   try {
-    const snap = await getDoc(doc(db, "settings", "categories"));
+    const [snap, names] = await Promise.all([
+      getDoc(doc(db, "settings", "categories")),
+      getDoc(doc(db, "settings", "names"))
+    ]);
     savedCategories = snap.exists() && Array.isArray(snap.data().list) ? snap.data().list : [];
+    const n = names.exists() ? names.data() : {};
+    namesEn = { categories: { ...(n.categories || {}) }, companies: { ...(n.companies || {}) } };
   } catch (err) { console.error(err); }
   fillLists();
+}
+
+// لما تختاري شركة أو قسم: الاسم الإنجليزي بيتملا من اللي محفوظ
+function prefillCompanyEn(prefix) {
+  $(`#${prefix}-company-en`).value = namesEn.companies[$(`#${prefix}-company`).value.trim()] || "";
+}
+function prefillCategoryEn(prefix) {
+  const sel = $(`#${prefix}-category`);
+  $(`#${prefix}-category-en`).value = sel.value && sel.value !== NEW_CAT ? namesEn.categories[sel.value] || "" : "";
+}
+for (const prefix of ["o", "p"]) {
+  $(`#${prefix}-company`).addEventListener("change", () => prefillCompanyEn(prefix));
+  $(`#${prefix}-category`).addEventListener("change", () => prefillCategoryEn(prefix));
+}
+
+// نحفظ الاسم الإنجليزي للشركة والقسم لو اتغيّر (فاضي = نمسحه)
+async function saveNamesEn(prefix, company, category) {
+  const patch = {};
+  const check = (kind, ar, en) => {
+    if (!ar) return;
+    const cur = namesEn[kind][ar] || "";
+    if (en === cur) return;
+    (patch[kind] ||= {})[ar] = en ? en : deleteField();
+    if (en) namesEn[kind][ar] = en; else delete namesEn[kind][ar];
+  };
+  check("companies", company, $(`#${prefix}-company-en`).value.trim());
+  check("categories", category, $(`#${prefix}-category-en`).value.trim());
+  if (Object.keys(patch).length) {
+    await setDoc(doc(db, "settings", "names"), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
+  }
 }
 
 function fillCategorySelect(sel, keep = sel.value) {
@@ -250,6 +287,7 @@ $("#product-form").addEventListener("submit", async (e) => {
     company: $("#p-company").value.trim(),
     category: readCategory($("#p-category")),
     name: $("#p-name").value.trim().replace(/\s+/g, " "),
+    nameEn: $("#p-name-en").value.trim(),
     publicPrice: num($("#p-price").value),
     image: pendingImage,
     updatedAt: serverTimestamp()
@@ -259,6 +297,7 @@ $("#product-form").addEventListener("submit", async (e) => {
   const btn = $("#p-save-btn"); btn.disabled = true;
   try {
     await rememberCategory(data.category);
+    await saveNamesEn("p", data.company, data.category);
     if (editingProductId) await updateDoc(doc(db, "products", editingProductId), data);
     else await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
     showMsg(msg, editingProductId ? "اتعدّل المنتج ✅" : "اتضاف المنتج ✅", true);
@@ -279,6 +318,9 @@ $("#admin-products").addEventListener("click", async (e) => {
     $("#p-company").value = p.company || "";
     setCategoryValue($("#p-category"), p.category);
     $("#p-name").value = p.name || "";
+    $("#p-name-en").value = p.nameEn || "";
+    prefillCompanyEn("p");
+    prefillCategoryEn("p");
     $("#p-price").value = p.publicPrice ?? "";
     const img = safeImage(p.image);
     $("#p-image-url").value = img && !img.startsWith("data:") ? img : "";
@@ -404,6 +446,7 @@ function addItemRow(item = {}) {
   const r = rowEls(row);
   r.select.innerHTML = productOptions();
   row.dataset.image = item.image || "";
+  row.dataset.nameEn = item.nameEn || "";
   if (item.productId && productsById.has(item.productId)) r.select.value = item.productId;
   else if (item.name) r.select.value = CUSTOM;
   r.name.value = item.name || "";
@@ -449,7 +492,8 @@ function readItems() {
       qty: Math.max(1, num(r.qty.value) || 1),
       publicPrice: num(r.publicPrice.value),
       offerPrice: num(r.offerPrice.value),
-      image: p ? p.image : row.dataset.image
+      image: p ? p.image : row.dataset.image,
+      nameEn: p ? p.nameEn || "" : row.dataset.nameEn || ""
     };
   }).filter((it) => it.name);
 }
@@ -502,6 +546,7 @@ function offerPayload(o) {
   const t = calcTotals(items);
   return {
     company: o.company.trim(), category: o.category, name: o.name.trim(),
+    titleEn: String(o.titleEn || "").trim(),
     imageUrl: safeUrl(o.imageUrl), products: items,
     endDate: isDateStr(o.endDate) ? o.endDate : "",
     totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
@@ -517,7 +562,7 @@ function linkItems(items) {
     const p = it.productId ? productsById.get(it.productId) : byName.get(normTitle(it.name));
     if (!p) return it;
     linked++;
-    return { ...it, productId: p.id, image: p.image };
+    return { ...it, productId: p.id, image: p.image, nameEn: p.nameEn || it.nameEn || "" };
   });
   return { items: out, linked };
 }
@@ -529,12 +574,13 @@ $("#offer-form").addEventListener("submit", async (e) => {
   if (!items.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
   const data = offerPayload({
     company: $("#o-company").value, category: readCategory($("#o-category")),
-    name: $("#o-name").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items
+    name: $("#o-name").value, titleEn: $("#o-name-en").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items
   });
   if (!data.category) return showMsg(msg, "اختاري القسم");
   const btn = $("#save-btn"); btn.disabled = true;
   try {
     await rememberCategory(data.category);
+    await saveNamesEn("o", data.company, data.category);
     if (editingId) await updateDoc(doc(db, "offers", editingId), data);
     else {
       await addDoc(collection(db, "offers"), { ...data, createdAt: serverTimestamp() });
@@ -545,6 +591,63 @@ $("#offer-form").addEventListener("submit", async (e) => {
     loadOffers();
   } catch (err) {
     console.error(err); showMsg(msg, errText(err));
+  } finally { btn.disabled = false; }
+});
+
+// ---------- استيراد الأسماء الإنجليزي ----------
+$("#import-en-btn").addEventListener("click", () => $("#import-en-file").click());
+$("#import-en-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const show = resultBox($("#import-en-result"));
+  const btn = $("#import-en-btn");
+  let json;
+  try {
+    json = JSON.parse((await file.text()).replace(/^\uFEFF/, ""));
+    if (!json || typeof json !== "object" || Array.isArray(json)) throw new Error("shape");
+  } catch {
+    return show(esc('الملف مش مظبوط: لازم يكون JSON بالشكل ده {"products":{…}, "offers":{…}, "categories":{…}, "companies":{…}}'), false);
+  }
+
+  btn.disabled = true;
+  show("جاري الاستيراد…");
+  try {
+    if (!(await loadProducts()) || !(await loadOffers())) return show("مقدرناش نحمّل البيانات الحالية، جرّبي تاني", false);
+    const companies = [...new Set([...offers, ...products].map((o) => o.company).filter(Boolean))];
+    const plan = planEnglishNames(json, products, offers, categoryList(), companies);
+
+    // تحديث المنتجات والعروض على دفعات
+    const updates = [
+      ...plan.productUpdates.map((u) => ["products", u.id, { nameEn: u.nameEn }]),
+      ...plan.offerUpdates.map(({ id, ...rest }) => ["offers", id, rest])
+    ];
+    for (let i = 0; i < updates.length; i += 400) {
+      const batch = writeBatch(db);
+      updates.slice(i, i + 400).forEach(([col, id, data]) =>
+        batch.update(doc(db, col, id), { ...data, updatedAt: serverTimestamp() }));
+      await batch.commit();
+    }
+    if (plan.stats.categories || plan.stats.companies) {
+      await setDoc(doc(db, "settings", "names"),
+        { categories: plan.categories, companies: plan.companies, updatedAt: serverTimestamp() }, { merge: true });
+      Object.assign(namesEn.categories, plan.categories);
+      Object.assign(namesEn.companies, plan.companies);
+    }
+    await loadProducts();
+    await loadOffers();
+
+    const st = plan.stats;
+    const list = (arr) => esc(arr.slice(0, 15).join("، ")) + (arr.length > 15 ? ` و${arr.length - 15} كمان` : "");
+    show(`
+      <div style="color:var(--green)">✅ المنتجات: اتحدّث ${st.productsUpdated}${st.productsSame ? ` (و${st.productsSame} كانوا متحدّثين)` : ""}</div>
+      <div style="color:var(--green)">✅ العروض: اتحدّث ${st.offersUpdated}${st.offersSame ? ` (و${st.offersSame} كانوا متحدّثين)` : ""}</div>
+      ${st.itemsUpdated ? `<div>🔤 أسماء منتجات جوّه العروض: ${st.itemsUpdated}</div>` : ""}
+      <div>🏷️ الأقسام: ${st.categories} · 🏢 الشركات: ${st.companies}</div>
+      ${st.productsNotFound.length ? `<div class="meta" style="color:var(--red)">منتجات ملقيناش بنفس الاسم (${st.productsNotFound.length}): ${list(st.productsNotFound)}</div>` : ""}
+      ${st.offersNotFound.length ? `<div class="meta" style="color:var(--red)">عروض ملقيناش بنفس الاسم (${st.offersNotFound.length}): ${list(st.offersNotFound)}</div>` : ""}`);
+  } catch (err) {
+    console.error(err); show(esc(errText(err)), false);
   } finally { btn.disabled = false; }
 });
 
@@ -627,6 +730,9 @@ $("#admin-offers").addEventListener("click", async (e) => {
     $("#o-company").value = o.company || "";
     setCategoryValue($("#o-category"), o.category);
     $("#o-name").value = o.name || "";
+    $("#o-name-en").value = o.titleEn || "";
+    prefillCompanyEn("o");
+    prefillCategoryEn("o");
     $("#o-image").value = o.imageUrl || "";
     $("#o-end").value = isDateStr(o.endDate) ? o.endDate : "";
     $("#products").innerHTML = "";

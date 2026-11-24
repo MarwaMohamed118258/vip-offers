@@ -45,12 +45,15 @@
           <h2 class="section-title" id="p-form-title">منتج جديد</h2>
           <form id="product-form" class="form-grid">
             <div class="field"><label for="p-company">الشركة</label><input id="p-company" class="input" list="companies" required></div>
+            <div class="field"><label for="p-company-en">اسم الشركة بالإنجليزي <span class="meta">(اختياري)</span></label><input id="p-company-en" class="input" dir="ltr" lang="en"></div>
             <div class="field">
               <label for="p-category">القسم</label>
               <select id="p-category" class="select" data-cat-select data-optional></select>
               <input id="p-category-new" class="input" placeholder="اكتبي اسم القسم الجديد" style="margin-top:6px" hidden>
             </div>
+            <div class="field"><label for="p-category-en">اسم القسم بالإنجليزي <span class="meta">(اختياري)</span></label><input id="p-category-en" class="input" dir="ltr" lang="en"></div>
             <div class="field"><label for="p-name">اسم المنتج</label><input id="p-name" class="input" required></div>
+            <div class="field"><label for="p-name-en">اسم المنتج بالإنجليزي <span class="meta">(اختياري)</span></label><input id="p-name-en" class="input" dir="ltr" lang="en"></div>
             <div class="field"><label for="p-price">سعر الجمهور</label><input id="p-price" class="input" type="number" min="0" step="0.01" inputmode="decimal" required></div>
 
             <div class="field">
@@ -93,13 +96,16 @@
           <h2 class="section-title" id="form-title">عرض جديد</h2>
           <form id="offer-form" class="form-grid">
             <div class="field"><label for="o-company">الشركة</label><input id="o-company" class="input" list="companies" required></div>
+            <div class="field"><label for="o-company-en">اسم الشركة بالإنجليزي <span class="meta">(اختياري)</span></label><input id="o-company-en" class="input" dir="ltr" lang="en"></div>
             <datalist id="companies"></datalist>
             <div class="field">
               <label for="o-category">القسم</label>
               <select id="o-category" class="select" data-cat-select required></select>
               <input id="o-category-new" class="input" placeholder="اكتبي اسم القسم الجديد" style="margin-top:6px" hidden>
             </div>
+            <div class="field"><label for="o-category-en">اسم القسم بالإنجليزي <span class="meta">(اختياري)</span></label><input id="o-category-en" class="input" dir="ltr" lang="en"></div>
             <div class="field"><label for="o-name">اسم العرض</label><input id="o-name" class="input" required></div>
+            <div class="field"><label for="o-name-en">اسم العرض بالإنجليزي <span class="meta">(اختياري)</span></label><input id="o-name-en" class="input" dir="ltr" lang="en"></div>
             <div class="field">
               <label for="o-end">تاريخ انتهاء العرض (اختياري)</label>
               <input id="o-end" class="input" type="date">
@@ -129,6 +135,18 @@
         </div>
 
         <!-- بيظهر بعد حفظ عرض جديد -->
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center">
+            <div>
+              <h2 class="section-title" style="margin:0">الأسماء الإنجليزي</h2>
+              <p class="meta" style="margin:2px 0 0">ملف JSON بيملا الأسماء الإنجليزي للمنتجات والعروض والأقسام والشركات الموجودة</p>
+            </div>
+            <button type="button" id="import-en-btn" class="btn btn-sm btn-purple">استيراد الأسماء الإنجليزي</button>
+            <input type="file" id="import-en-file" accept=".json,application/json" hidden>
+          </div>
+          <div id="import-en-result" class="calc-box" style="font-weight:600;margin-top:10px" hidden></div>
+        </div>
+
         <div class="panel" id="push-panel" hidden>
           <h2 class="section-title">بلّغي العملاء بالعرض الجديد</h2>
           <div class="calc-box" style="font-weight:600">

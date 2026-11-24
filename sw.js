@@ -5,7 +5,7 @@ try {
   // لو النت مقطوع أو OneSignal مش متاح، التطبيق يفضل شغال عادي
 }
 
-const VERSION = "vip-v7";
+const VERSION = "vip-v8";
 const SHELL = [
   "/",
   "/index.html",
@@ -17,6 +17,7 @@ const SHELL = [
   "/js/firebase.js",
   "/js/image.js",
   "/js/cart.js",
+  "/js/i18n.js",
   "/manifest.json",
   "/icons/icon.svg",
   "/icons/icon-192.png",

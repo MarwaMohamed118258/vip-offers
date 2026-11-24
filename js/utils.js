@@ -122,7 +122,8 @@ export function mapImportedOffer(raw) {
       imageUrl: safeUrl(raw.imageUrl),
       products,
       totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
-      endDate: isDateStr(raw.endDate) ? raw.endDate : ""
+      endDate: isDateStr(raw.endDate) ? raw.endDate : "",
+      titleEn: typeof raw.titleEn === "string" ? raw.titleEn.trim() : ""
     },
     mismatch
   };
@@ -177,7 +178,10 @@ export function mapImportedProduct(raw) {
   if (!name) return { reason: "من غير اسم" };
   if (!company) return { reason: "ناقصه الشركة", name };
   return {
-    product: { company, category, name, publicPrice: num(raw.publicPrice), image: safeImage(raw.image) }
+    product: {
+      company, category, name, publicPrice: num(raw.publicPrice), image: safeImage(raw.image),
+      nameEn: typeof raw.nameEn === "string" ? raw.nameEn.trim() : ""
+    }
   };
 }
 
@@ -191,6 +195,8 @@ export function offerItem(p) {
     offerPrice: num(p.offerPrice)
   };
   if (p.productId) item.productId = String(p.productId);
+  const nameEn = typeof p.nameEn === "string" ? p.nameEn.trim() : "";
+  if (nameEn) item.nameEn = nameEn;
   const img = safeImage(p.image);
   if (img && !img.startsWith("data:")) item.image = img;
   return item;
@@ -210,3 +216,79 @@ export const SAMPLE_OFFER = {
     { name: "سيرم الرموش", qty: 1, publicPrice: 300, offerPrice: 153 }
   ]
 };
+
+// ---------- استيراد الأسماء الإنجليزي ----------
+// json: { products:{عربي:English}, offers:{عربي:English}, categories:{…}, companies:{…} }
+// بيرجّع التعديلات المطلوبة (من غير ما يكتب حاجة) + الأرقام
+export function planEnglishNames(json, products, offers, knownCategories = [], knownCompanies = []) {
+  const toMap = (obj) => {
+    const m = new Map();
+    if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+      for (const [ar, en] of Object.entries(obj)) {
+        const v = typeof en === "string" ? en.trim() : "";
+        if (String(ar).trim() && v) m.set(normTitle(ar), { ar: String(ar).trim(), en: v });
+      }
+    }
+    return m;
+  };
+  const pMap = toMap(json?.products), oMap = toMap(json?.offers);
+  const cMap = toMap(json?.categories), coMap = toMap(json?.companies);
+  const usedP = new Set(), usedO = new Set();
+
+  const productUpdates = [];
+  let productsSame = 0;
+  for (const p of products) {
+    const hit = pMap.get(normTitle(p.name));
+    if (!hit) continue;
+    usedP.add(normTitle(p.name));
+    if ((p.nameEn || "") === hit.en) productsSame++;
+    else productUpdates.push({ id: p.id, nameEn: hit.en });
+  }
+
+  const offerUpdates = [];
+  let offersSame = 0, itemsUpdated = 0;
+  for (const o of offers) {
+    const change = {};
+    const hit = oMap.get(normTitle(o.name));
+    if (hit) {
+      usedO.add(normTitle(o.name));
+      if ((o.titleEn || "") !== hit.en) change.titleEn = hit.en; else offersSame++;
+    }
+    let itemsChanged = false;
+    const items = (o.products || []).map((it) => {
+      const ph = pMap.get(normTitle(it.name));
+      if (!ph) return it;
+      usedP.add(normTitle(it.name));
+      if ((it.nameEn || "") === ph.en) return it;
+      itemsChanged = true; itemsUpdated++;
+      return { ...it, nameEn: ph.en };
+    });
+    if (itemsChanged) change.products = items;
+    if (Object.keys(change).length) offerUpdates.push({ id: o.id, ...change });
+  }
+
+  // الأقسام والشركات: نربط بالاسم الموجود لو قريب منه (مسافات، أ/ا، ة/ه…)
+  const mapNames = (m, known) => {
+    const out = {};
+    for (const { ar, en } of m.values()) {
+      const existing = known.find((k) => normTitle(k) === normTitle(ar));
+      out[existing || ar] = en;
+    }
+    return out;
+  };
+  const categories = mapNames(cMap, knownCategories);
+  const companies = mapNames(coMap, knownCompanies);
+
+  return {
+    productUpdates, offerUpdates, categories, companies,
+    stats: {
+      productsUpdated: productUpdates.length, productsSame,
+      productsNotFound: [...pMap.entries()].filter(([k]) => !usedP.has(k)).map(([, v]) => v.ar),
+      offersUpdated: offerUpdates.filter((u) => u.titleEn !== undefined).length, offersSame,
+      offersNotFound: [...oMap.entries()].filter(([k]) => !usedO.has(k)).map(([, v]) => v.ar),
+      itemsUpdated,
+      categories: Object.keys(categories).length,
+      companies: Object.keys(companies).length
+    }
+  };
+}
