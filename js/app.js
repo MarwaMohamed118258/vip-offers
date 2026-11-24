@@ -11,6 +11,7 @@ import {
   reloadOnNewServiceWorker
 } from "./notifications.js";
 import { t, isEn, fmtMoney as money, applyStatic, toggleLang } from "./i18n.js";
+import { setupVoiceSearch } from "./voice.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -800,6 +801,9 @@ document.addEventListener("click", async (e) => {
 $("#company-filter").addEventListener("change", (e) => { state.company = e.target.value; renderHome(); });
 $("#search").addEventListener("input", (e) => { state.search = e.target.value; renderHome(); });
 $("#products-search").addEventListener("input", (e) => { state.productSearch = e.target.value; renderCatalog(); });
+// البحث بالصوت (بيستخبى لوحده لو المتصفح مش بيدعمه)
+setupVoiceSearch($("#search"), toast);
+setupVoiceSearch($("#products-search"), toast);
 
 $("#welcome-btn").addEventListener("click", async (e) => {
   const btn = e.currentTarget;

@@ -6,7 +6,7 @@ try {
 }
 
 // غيّري الرقم ده مع كل تحديث عشان الكاش القديم يتمسح
-const VERSION = "vip-v10";
+const VERSION = "vip-v11";
 const SHELL = [
   "/",
   "/index.html",
@@ -19,6 +19,7 @@ const SHELL = [
   "/js/image.js",
   "/js/cart.js",
   "/js/i18n.js",
+  "/js/voice.js",
   "/manifest.json",
   "/icons/icon.svg",
   "/icons/icon-192.png",

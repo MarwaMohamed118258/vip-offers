@@ -72,7 +72,9 @@
       <div class="container">
         <div id="kind-tabs" class="seg" role="tablist"></div>
         <div class="filters">
-          <input id="search" class="select search" type="search" data-i18n-ph="searchPh" placeholder="دوّر على عرض أو منتج أو شركة" autocomplete="off">
+          <div class="search-wrap">
+            <input id="search" class="select search" type="search" data-i18n-ph="searchPh" placeholder="دوّر على عرض أو منتج أو شركة" autocomplete="off">
+          </div>
           <p class="filter-label" data-i18n="companyLabel">الشركة</p>
           <select id="company-filter" class="select" aria-label="فلتر الشركة" data-i18n-aria="companyFilter">
             <option value="">كل الشركات</option>
@@ -111,7 +113,9 @@
         </div>
       </header>
       <div class="container">
-        <input id="products-search" class="select search" type="search" data-i18n-ph="searchProductsPh" placeholder="دوّر على منتج أو شركة" autocomplete="off" style="margin-top:16px">
+        <div class="search-wrap" style="margin-top:16px">
+          <input id="products-search" class="select search" type="search" data-i18n-ph="searchProductsPh" placeholder="دوّر على منتج أو شركة" autocomplete="off">
+        </div>
         <div id="catalog-body"></div>
       </div>
     </section>

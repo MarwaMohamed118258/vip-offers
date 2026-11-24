@@ -45,6 +45,12 @@ const STR = {
     kindTabs: "نوع العروض",
     all: "الكل",
     searchPh: "دوّر على عرض أو منتج أو شركة",
+    micStart: "بحث بالصوت",
+    micStop: "وقّف التسجيل",
+    listening: "بتكلم...",
+    micDenied: "اسمح للمتصفح يستخدم المايك عشان البحث بالصوت",
+    micNoSpeech: "مسمعناش حاجة، جرّب تاني",
+    micNetwork: "البحث بالصوت محتاج نت",
     reorder: "🔁 اطلب نفس طلبك اللي فات",
     noOffers: "مفيش عروض هنا دلوقتي، فعّل الإشعارات وهنبلغك أول ما ينزل عرض جديد",
     noResults: "مفيش نتايج للبحث ده",
@@ -172,6 +178,12 @@ const STR = {
     kindTabs: "Offer type",
     all: "All",
     searchPh: "Search offers, products or companies",
+    micStart: "Voice search",
+    micStop: "Stop listening",
+    listening: "Listening...",
+    micDenied: "Allow microphone access to use voice search",
+    micNoSpeech: "Didn't catch that, try again",
+    micNetwork: "Voice search needs an internet connection",
     reorder: "🔁 Repeat your last order",
     noOffers: "No offers here right now. Enable notifications and we'll let you know as soon as a new one is out.",
     noResults: "No results for this search",
@@ -300,4 +312,5 @@ export function toggleLang() {
   lang = lang === "en" ? "ar" : "en";
   try { localStorage.setItem(LANG_KEY, lang); } catch {}
   applyStatic();
+  document.dispatchEvent(new Event("langchange"));
 }
