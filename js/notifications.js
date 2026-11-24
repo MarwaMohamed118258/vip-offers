@@ -95,11 +95,36 @@ export async function enableNotifications() {
 export async function registerAppServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   try {
-    const reg = await navigator.serviceWorker.getRegistration("/");
+    let reg = await navigator.serviceWorker.getRegistration("/");
     const url = reg && (reg.active || reg.waiting || reg.installing)?.scriptURL;
-    if (url && new URL(url).pathname === "/sw.js") return;
-    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    if (!(url && new URL(url).pathname === "/sw.js")) {
+      reg = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
+    }
+    // نشوف لو فيه نسخة جديدة: دلوقتي، وكل ما التطبيق يرجع قدّام (التطبيق المتثبّت مبيعملش reload لوحده)
+    const check = () => reg.update().catch(() => {});
+    check();
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
   } catch (e) {
     console.warn("SW registration failed", e);
   }
+}
+
+// لما service worker جديد يمسك الصفحة: نعمل reload مرة واحدة عشان الملفات الجديدة تشتغل.
+// لازم تتنادي أول ما الصفحة تفتح (قبل ما التحديث يخلص).
+export function reloadOnNewServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  // أول زيارة خالص (مفيش service worker لسه) مش محتاجة reload
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloading) return;
+    // حماية من التكرار: مرة واحدة بس كل 30 ثانية
+    try {
+      const last = Number(sessionStorage.getItem("vip_sw_reload") || 0);
+      if (Date.now() - last < 30000) return;
+      sessionStorage.setItem("vip_sw_reload", String(Date.now()));
+    } catch {}
+    reloading = true;
+    location.reload();
+  });
 }

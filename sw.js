@@ -5,7 +5,8 @@ try {
   // لو النت مقطوع أو OneSignal مش متاح، التطبيق يفضل شغال عادي
 }
 
-const VERSION = "vip-v8";
+// غيّري الرقم ده مع كل تحديث عشان الكاش القديم يتمسح
+const VERSION = "vip-v9";
 const SHELL = [
   "/",
   "/index.html",
@@ -25,7 +26,13 @@ const SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(VERSION)
+      // cache: "reload" = نجيب من السيرفر نفسه مش من كاش المتصفح (عشان منحفظش نسخة قديمة)
+      .then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" }))))
+      .catch((e) => console.warn("precache failed", e))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -36,41 +43,60 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// النت الأول، والكاش بس لو مفيش نت
+async function networkFirst(req, fallbackUrl) {
+  const cache = await caches.open(VERSION);
+  try {
+    // طلبات الصفحات (navigate) مينفعش نديها options، والسيرفر بيبعتها no-cache أصلاً
+    const res = await (req.mode === "navigate" ? fetch(req) : fetch(req, { cache: "no-cache" }));
+    if (res.ok) cache.put(req, res.clone());
+    return res;
+  } catch (e) {
+    return (await cache.match(req, { ignoreSearch: true })) ||
+      (fallbackUrl && (await cache.match(fallbackUrl))) ||
+      Response.error();
+  }
+}
+
+// الكاش الأول (للملفات اللي اسمها فيه رقم نسخة ومبتتغيّرش: Firebase SDK والخطوط والأيقونات)
+async function cacheFirst(req) {
+  const cache = await caches.open(VERSION);
+  const cached = await cache.match(req);
+  if (cached) return cached;
+  const res = await fetch(req);
+  if (res.ok || res.type === "opaque") cache.put(req, res.clone());
+  return res;
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  const sameOrigin = url.origin === location.origin;
 
-  // صفحات HTML: النت الأول، ولو مفيش نت نرجّع النسخة المحفوظة
+  // الصفحات: النت الأول، ولو مفيش نت الصفحة المحفوظة
   if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req).then((res) => {
-        if (url.origin === location.origin && url.pathname !== "/admin.html") {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => caches.match(req).then((r) => r || caches.match("/index.html")))
-    );
+    if (sameOrigin && url.pathname.startsWith("/admin")) return; // لوحة الأدمن من النت دايماً
+    event.respondWith(networkFirst(req, "/index.html"));
     return;
   }
 
-  // ملفات الموقع + خطوط جوجل + Firebase SDK: من الكاش وبنحدّثه في الخلفية
-  const cacheable =
-    url.origin === location.origin ||
-    url.hostname === "fonts.googleapis.com" ||
-    url.hostname === "fonts.gstatic.com" ||
-    (url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/"));
-  if (!cacheable) return; // Firestore و OneSignal يروحوا للنت مباشرة
+  if (sameOrigin) {
+    // HTML و JS و CSS و manifest: النت الأول دايماً عشان أي تحديث يظهر على طول
+    if (/\.(html|js|css|json)$/.test(url.pathname) || url.pathname === "/") {
+      if (url.pathname === "/sw.js") return;
+      event.respondWith(networkFirst(req));
+      return;
+    }
+    // الأيقونات والصور
+    event.respondWith(cacheFirst(req));
+    return;
+  }
 
-  event.respondWith(
-    caches.open(VERSION).then(async (cache) => {
-      const cached = await cache.match(req);
-      const network = fetch(req).then((res) => {
-        if (res.ok || res.type === "opaque") cache.put(req, res.clone());
-        return res;
-      }).catch(() => cached);
-      return cached || network;
-    })
-  );
+  // خطوط جوجل + Firebase SDK (روابطها فيها رقم النسخة)
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" ||
+      (url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/"))) {
+    event.respondWith(cacheFirst(req));
+  }
+  // أي حاجة تانية (Firestore و OneSignal): النت مباشرة
 });

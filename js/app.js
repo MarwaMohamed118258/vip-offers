@@ -7,7 +7,8 @@ import {
   getPharmacy, savePharmacy, getLastOrder, saveLastOrder, buildOrderMessage
 } from "./cart.js";
 import {
-  initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker
+  initNotifications, enableNotifications, getStatus, onNotifChange, needsIOSInstall, registerAppServiceWorker,
+  reloadOnNewServiceWorker
 } from "./notifications.js";
 import { t, isEn, fmtMoney as money, applyStatic, toggleLang } from "./i18n.js";
 
@@ -19,9 +20,11 @@ const PRODUCTS_KEY = "vip_products_info";
 const CATS_KEY = "vip_categories";
 const NAMES_KEY = "vip_names_en";
 const ALL = "__all";
+const KIND_KEY = "vip_kind";
 
 const state = {
   offers: [], loaded: false, fresh: false, company: "", category: ALL, search: "",
+  kind: null, // "single" = عروض منتج واحد، "bundle" = مجموعات مشكّلة
   about: null,
   productInfo: new Map(),            // productId → { image, nameEn }
   savedCategories: [],
@@ -68,6 +71,9 @@ async function loadOffers() {
   try {
     const { db, collection, getDocs, query, orderBy } = await firestore();
     const snap = await getDocs(query(collection(db, "offers"), orderBy("createdAt", "desc")));
+    // من غير نت، Firestore بيرجّع نتيجة فاضية من الكاش بتاعه بدل ما يدّي error:
+    // منعتبرهاش، ونفضل على النسخة المحفوظة عندنا
+    if (snap.metadata.fromCache) throw new Error("offline");
     state.offers = snap.docs.map((d) => {
       const data = d.data();
       return { id: d.id, ...data, createdAt: data.createdAt?.toMillis?.() || 0, updatedAt: undefined };
@@ -77,7 +83,7 @@ async function loadOffers() {
     store.set(CACHE_KEY, JSON.stringify(state.offers));
     pruneCart();
   } catch (e) {
-    console.error(e);
+    if (e.message === "offline") console.warn("offers: offline, showing saved copy"); else console.error(e);
     if (!state.loaded) state.error = e.message === "not-configured" ? "notConfigured" : "loadError";
   }
   rerender();
@@ -95,6 +101,7 @@ async function loadSettings() {
       getDoc(doc(db, "settings", "categories")),
       getDoc(doc(db, "settings", "names"))
     ]);
+    if (cats.metadata.fromCache || names.metadata.fromCache) throw new Error("offline");
     const list = cats.exists() && Array.isArray(cats.data().list) ? cats.data().list.filter((c) => typeof c === "string") : [];
     const n = names.exists() ? names.data() : {};
     state.savedCategories = list;
@@ -138,6 +145,7 @@ async function loadProductInfo() {
     const fresh = new Map();
     for (let i = 0; i < ids.length; i += 30) {
       const snap = await getDocs(query(collection(db, "products"), where(documentId(), "in", ids.slice(i, i + 30))));
+      if (snap.metadata.fromCache) throw new Error("offline");
       snap.forEach((d) => {
         const p = d.data();
         fresh.set(d.id, { image: safeImage(p.image), nameEn: str(p.nameEn) });
@@ -243,19 +251,47 @@ function offerCard(o) {
   </article>`;
 }
 
+// عرض منتج واحد = فيه منتج واحد بس (بأي كمية)، ومجموعة مشكّلة = فيه منتجين أو أكتر
+const offerKind = (o) => ((o.products || []).filter((p) => p && p.name).length >= 2 ? "bundle" : "single");
+
+function renderKindTabs(counts) {
+  $("#kind-tabs").setAttribute("aria-label", t("kindTabs"));
+  $("#kind-tabs").innerHTML = [["single", "tabSingle"], ["bundle", "tabBundles"]].map(([k, key]) =>
+    `<button type="button" role="tab" data-kind="${k}" class="${state.kind === k ? "active" : ""}" aria-selected="${state.kind === k}">${t(key)}<span class="count">${counts[k]}</span></button>`
+  ).join("");
+}
+
 function renderHome() {
   const offers = visibleOffers();
   renderFilters(offers);
   const list = $("#offers-list");
-  if (!state.loaded) {
-    if (state.error) list.innerHTML = `<p class="state-msg">${esc(t(state.error))}</p>`;
-    return;
+  if (!state.kind) {
+    // أول مرة: التبويب اللي اختاره العميل قبل كده، وإلا «عروض منتج واحد» لو فيها عروض
+    const saved = store.get(KIND_KEY);
+    if (saved === "single" || saved === "bundle") state.kind = saved;
+    else if (state.loaded) state.kind = offers.some((o) => offerKind(o) === "single") ? "single" : "bundle";
   }
-  const items = offers.filter((o) =>
+  const filtered = offers.filter((o) =>
     (!state.company || o.company === state.company) &&
     (state.category === ALL || o.category === state.category) &&
     matchesSearch(o)
   );
+  // الأرقام على التبويبات بتتبع الفلاتر والبحث، عشان يبان لو فيه نتايج في التبويب التاني
+  const counts = {
+    single: filtered.filter((o) => offerKind(o) === "single").length,
+    bundle: filtered.filter((o) => offerKind(o) === "bundle").length
+  };
+  // وإنتي بتدوّري: لو النتايج كلها في التبويب التاني ننقل عليه
+  if (state.search.trim() && state.kind && !counts[state.kind]) {
+    const other = state.kind === "single" ? "bundle" : "single";
+    if (counts[other]) state.kind = other;
+  }
+  renderKindTabs(counts);
+  if (!state.loaded) {
+    if (state.error) list.innerHTML = `<p class="state-msg">${esc(t(state.error))}</p>`;
+    return;
+  }
+  const items = filtered.filter((o) => offerKind(o) === (state.kind || "single"));
   list.innerHTML = items.length
     ? items.map(offerCard).join("")
     : `<p class="state-msg">${esc(state.search.trim() ? t("noResults") : t("noOffers"))}</p>`;
@@ -624,6 +660,9 @@ document.addEventListener("click", async (e) => {
     return;
   }
 
+  const kindBtn = e.target.closest("[data-kind]");
+  if (kindBtn) { state.kind = kindBtn.dataset.kind; store.set(KIND_KEY, state.kind); renderHome(); return; }
+
   const chip = e.target.closest("[data-cat]");
   if (chip) { state.category = chip.dataset.cat; renderHome(); return; }
 
@@ -684,6 +723,7 @@ window.addEventListener("storage", (e) => { if (e.key === "vip_cart") rerender()
 onNotifChange(renderNotif);
 
 // ---------- البداية ----------
+reloadOnNewServiceWorker(); // لازم أول حاجة: لو نسخة جديدة مسكت الصفحة نعمل reload مرة واحدة
 applyStatic();
 // لو الإشعارات متفعّلة بالفعل، منعرضش شاشة الترحيب
 if (getStatus() === "granted") store.set(WELCOME_KEY, "1");
