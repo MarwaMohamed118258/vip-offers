@@ -1,0 +1,1854 @@
+{
+  "لوشن الشعر": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-hair-lotion",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Floating_Parishia_Star_Hair_Lotion_Showcase_256189fd-0d9e-4c30-b5c3-4d414b964bd2_400x.png?v=1793631428",
+    "source": "product.json (اختيار يدوي: صورة رقم 4)",
+    "images": 1,
+    "score": null
+  },
+  "سيرم الشعر": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-hair-serum",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Premium_Parishia_Star_Hair_Serum_Duo_400x.png?v=1793702151",
+    "source": "product.json (اختيار يدوي: صورة رقم 4)",
+    "images": 1,
+    "score": null
+  },
+  "شامبو القشرة": {
+    "page": "https://www.parishiapharma.com/products/parishia-anti-dandruff-shampoo",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Anti-Dandruff_Duo_1015c8f6-f6d5-4b09-a678-d936bb64ab7c_400x.png?v=1793631163",
+    "source": "product.json (اختيار يدوي: صورة رقم 5)",
+    "images": 1,
+    "score": null
+  },
+  "شامبو الشعر": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-hair-shampoo",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/OLDSHAMPOO_400x.webp?v=1786371034",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.441,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/OLDSHAMPOO.webp?v=1786371034",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.441,
+        "stats": {
+          "whiteBorder": 0.9940677966101695,
+          "plainBorder": 0.9915254237288136,
+          "centerStd": 109.61732215677642,
+          "whiteAll": 0.837158203125,
+          "red": 0,
+          "edges": 0.038818359375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Luxury_Black_Shampoo_Bubble_Advertisement.png?v=1793630335",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.051,
+        "stats": {
+          "whiteBorder": 0.8593220338983051,
+          "plainBorder": 0.6661016949152543,
+          "centerStd": 98.19868170627402,
+          "whiteAll": 0.633056640625,
+          "red": 0,
+          "edges": 0.090087890625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Luxury_Shampoo_in_Bubbles.png?v=1793630334",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.854,
+        "stats": {
+          "whiteBorder": 0.6067796610169491,
+          "plainBorder": 0.6177966101694915,
+          "centerStd": 101.15163643425049,
+          "whiteAll": 0.6572265625,
+          "red": 0,
+          "edges": 0.041259765625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Luxurious_Parishia_Star_Shampoo_Shower_Scene.png?v=1793630335",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.046,
+        "stats": {
+          "whiteBorder": 0.11440677966101695,
+          "plainBorder": 0.14491525423728813,
+          "centerStd": 68.10960673048017,
+          "whiteAll": 0.0791015625,
+          "red": 0,
+          "edges": 0.110595703125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "هيرسكينو": {
+    "page": "https://www.parishiapharma.com/products/hairskino-30-cap",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/HAIRSKINO_2ae2b824-bc90-4c6f-8ad7-4072cf882eb7_400x.webp?v=1782290787",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/HAIRSKINO_2ae2b824-bc90-4c6f-8ad7-4072cf882eb7.webp?v=1782290787",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 42.61175487937795,
+          "whiteAll": 0.64013671875,
+          "red": 0,
+          "edges": 0.023193359375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_23d93cc5-7efa-4a75-9fa5-60f0840f3e08.webp?v=1793702982",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.4,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 59.96910503194624,
+          "whiteAll": 0.548828125,
+          "red": 0.002685546875,
+          "edges": 0.038818359375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_1_f3fc76e0-a179-454d-a581-c1a1c2120e4c.webp?v=1793702982",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.077,
+        "stats": {
+          "whiteBorder": 0.7957627118644067,
+          "plainBorder": 0.7338983050847457,
+          "centerStd": 58.61849341201147,
+          "whiteAll": 0.456787109375,
+          "red": 0.007080078125,
+          "edges": 0.036865234375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_1.webp?v=1793702982",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.699,
+        "stats": {
+          "whiteBorder": 0.5364406779661017,
+          "plainBorder": 0.5169491525423728,
+          "centerStd": 63.461834853299685,
+          "whiteAll": 0.292236328125,
+          "red": 0.009033203125,
+          "edges": 0.068115234375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "أوركينتا": {
+    "page": "https://www.parishiapharma.com/products/orkinta-30-cap",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ORCINTA_7f63ef12-f078-4678-837c-bf32ac99a634_400x.webp?v=1786371343",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.247,
+    "needsReview": true,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ORCINTA_7f63ef12-f078-4678-837c-bf32ac99a634.webp?v=1786371343",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.247,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 47.43008741436568,
+          "whiteAll": 0.781982421875,
+          "red": 0.038818359375,
+          "edges": 0.0087890625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_c7a55991-6a7e-4ec9-8b30-802e3b384be1.webp?v=1793633012",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.981,
+        "stats": {
+          "whiteBorder": 0.961864406779661,
+          "plainBorder": 0.9550847457627119,
+          "centerStd": 45.08346348412862,
+          "whiteAll": 0.615234375,
+          "red": 0.0654296875,
+          "edges": 0.01806640625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_fbc2b18d-e40a-4496-88fc-a5c72cc1cd08.webp?v=1793633012",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.938,
+        "stats": {
+          "whiteBorder": 0.8898305084745762,
+          "plainBorder": 0.8330508474576271,
+          "centerStd": 48.1066081332168,
+          "whiteAll": 0.58056640625,
+          "red": 0.03515625,
+          "edges": 0.101806640625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "سيرم الرموش": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-lashes-serum",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ParishaStarLashSerumTube_400x.png?v=1791663406",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.431,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ParishaStarLashSerumTube.png?v=1791663406",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.431,
+        "stats": {
+          "whiteBorder": 0.9906779661016949,
+          "plainBorder": 0.9754237288135593,
+          "centerStd": 17.317379061600736,
+          "whiteAll": 0.93798828125,
+          "red": 0,
+          "edges": 0.0009765625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Lashes_Serum_Set.png?v=1793545882",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.388,
+        "stats": {
+          "whiteBorder": 0.997457627118644,
+          "plainBorder": 0.9771186440677966,
+          "centerStd": 28.53166945855777,
+          "whiteAll": 0.709228515625,
+          "red": 0,
+          "edges": 0.021240234375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Luxury_Lash_and_Brow_Serum_Flat_Lay.png?v=1793545884",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.058,
+        "stats": {
+          "whiteBorder": 0.7762711864406779,
+          "plainBorder": 0.7033898305084746,
+          "centerStd": 46.769028361609365,
+          "whiteAll": 0.59423828125,
+          "red": 0,
+          "edges": 0.04345703125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "ليف إن": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-leave-in-conditioner",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/leavein_5_400x.png?v=1784634502",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/leavein_5.png?v=1784634502",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 37.602294355366745,
+          "whiteAll": 0.871337890625,
+          "red": 0,
+          "edges": 0.026611328125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Dewy_Curl_Conditioner.png?v=1793547044",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.153,
+        "stats": {
+          "whiteBorder": 0.8254237288135593,
+          "plainBorder": 0.8186440677966101,
+          "centerStd": 40.08662054761869,
+          "whiteAll": 0.6748046875,
+          "red": 0,
+          "edges": 0.02197265625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Curly_Hair_Leave-In_Conditioner_Ad.png?v=1793547046",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.241,
+        "stats": {
+          "whiteBorder": 0.16779661016949152,
+          "plainBorder": 0.18220338983050846,
+          "centerStd": 83.93592012038437,
+          "whiteAll": 0.14404296875,
+          "red": 0,
+          "edges": 0.0224609375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Premium_Frizz-Control_Conditioner_Ad.png?v=1793547046",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.215,
+        "stats": {
+          "whiteBorder": 0.26864406779661015,
+          "plainBorder": 0.26440677966101694,
+          "centerStd": 90.61864373026081,
+          "whiteAll": 0.17919921875,
+          "red": 0,
+          "edges": 0.123779296875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "غسول الوجه": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-facial-cleanser-200-ml",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/rn-image_picker_lib_temp_834438b4-781a-4688-8464-2ba7c8d58473_400x.png?v=1789223917",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.327,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/rn-image_picker_lib_temp_834438b4-781a-4688-8464-2ba7c8d58473.png?v=1789223917",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.327,
+        "stats": {
+          "whiteBorder": 0.9144067796610169,
+          "plainBorder": 0.9076271186440678,
+          "centerStd": 54.94273170728371,
+          "whiteAll": 0.701416015625,
+          "red": 0,
+          "edges": 0.05029296875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PARISHIA_Purifying_Facial_Cleanser.png?v=1793626980",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.516,
+        "stats": {
+          "whiteBorder": 0.47372881355932206,
+          "plainBorder": 0.10677966101694915,
+          "centerStd": 35.25136414872768,
+          "whiteAll": 0.395263671875,
+          "red": 0,
+          "edges": 0.025390625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Radiant_Foaming_Facial_Cleanser_Ad.png?v=1793626981",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.286,
+        "stats": {
+          "whiteBorder": 0.2677966101694915,
+          "plainBorder": 0.044915254237288135,
+          "centerStd": 43.63687632688772,
+          "whiteAll": 0.20703125,
+          "red": 0,
+          "edges": 0.032958984375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Blue_Cleanser_Glow.png?v=1793626979",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.285,
+        "stats": {
+          "whiteBorder": 0.25508474576271184,
+          "plainBorder": 0.07457627118644068,
+          "centerStd": 35.52856646174556,
+          "whiteAll": 0.395751953125,
+          "red": 0,
+          "edges": 0.023193359375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "سيرم الوجه": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-facial-serum",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/rn-image_picker_lib_temp_c508d1fd-51cb-4d99-a3d7-3b092fa2cc64_400x.png?v=1789224131",
+    "source": "product.json (اختيار يدوي: صورة رقم 1)",
+    "images": 1,
+    "score": null
+  },
+  "كريم التفتيح": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-whitening-cream",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Whitening_Cream_Display_400x.png?v=1793624129",
+    "source": "product.json (اختيار يدوي: صورة رقم 3)",
+    "images": 1,
+    "score": null
+  },
+  "مرطب Water Gel": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-moisturizer-water-gel",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Moistruizer_4_400x.png?v=1784635350",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.422,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Moistruizer_4.png?v=1784635350",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.422,
+        "stats": {
+          "whiteBorder": 0.985593220338983,
+          "plainBorder": 0.9669491525423729,
+          "centerStd": 18.93672575310728,
+          "whiteAll": 0.910888671875,
+          "red": 0,
+          "edges": 0.000244140625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parisha_Star_Hydrating_Water-Gel_Ad.png?v=1793547370",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.3,
+        "stats": {
+          "whiteBorder": 0.9364406779661016,
+          "plainBorder": 0.9084745762711864,
+          "centerStd": 20.94496167834399,
+          "whiteAll": 0.6875,
+          "red": 0,
+          "edges": 0.001220703125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PARISHIA_Star_Moisturizer_Water_Gel_Set_2.png?v=1793547373",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.664,
+        "stats": {
+          "whiteBorder": 0.37203389830508476,
+          "plainBorder": 0.7305084745762712,
+          "centerStd": 20.113911545571227,
+          "whiteAll": 0.343017578125,
+          "red": 0,
+          "edges": 0.006103515625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "بلامبر الشفايف والخدود": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-lip-cheeks-plumper",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ParishiaLips_CheeksPlumper_400x.png?v=1791663551",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.415,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/ParishiaLips_CheeksPlumper.png?v=1791663551",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.415,
+        "stats": {
+          "whiteBorder": 0.9771186440677966,
+          "plainBorder": 0.9703389830508474,
+          "centerStd": 14.943928812886003,
+          "whiteAll": 0.929443359375,
+          "red": 0,
+          "edges": 0.00146484375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Luxury_Lip_and_Cheek_Plumper_Display.png?v=1793546298",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1,
+        "stats": {
+          "whiteBorder": 0.714406779661017,
+          "plainBorder": 0.7135593220338983,
+          "centerStd": 30.819918350133186,
+          "whiteAll": 0.6572265625,
+          "red": 0,
+          "edges": 0.01123046875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Glossy_Lip_and_Cheek_Plumper_Ad.png?v=1793546300",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.823,
+        "stats": {
+          "whiteBorder": 0.6542372881355932,
+          "plainBorder": 0.4228813559322034,
+          "centerStd": 27.073280790942956,
+          "whiteAll": 0.478271484375,
+          "red": 0,
+          "edges": 0.00146484375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "رول أون": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-whitening-roll-on",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/rollon_5_400x.png?v=1784634437",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.424,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/rollon_5.png?v=1784634437",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.424,
+        "stats": {
+          "whiteBorder": 0.9923728813559322,
+          "plainBorder": 0.9542372881355933,
+          "centerStd": 26.61911678833395,
+          "whiteAll": 0.88916015625,
+          "red": 0,
+          "edges": 0.00927734375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Roll-On_Deodorant_Beauty_Ad.png?v=1793546538",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.581,
+        "stats": {
+          "whiteBorder": 0.4279661016949153,
+          "plainBorder": 0.3822033898305085,
+          "centerStd": 30.16908344226412,
+          "whiteAll": 0.3505859375,
+          "red": 0.001953125,
+          "edges": 0.01806640625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Roll-On_in_Sky-Blue_Glow.png?v=1793546538",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.261,
+        "stats": {
+          "whiteBorder": 0.15677966101694915,
+          "plainBorder": 0.26016949152542374,
+          "centerStd": 26.223371863984212,
+          "whiteAll": 0.191162109375,
+          "red": 0,
+          "edges": 0.022705078125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Deodorant_by_the_Sea.png?v=1793546539",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.104,
+        "stats": {
+          "whiteBorder": 0.07796610169491526,
+          "plainBorder": 0.06610169491525424,
+          "centerStd": 32.63012870663105,
+          "whiteAll": 0.075927734375,
+          "red": 0,
+          "edges": 0.02392578125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "صن سكرين SPF 50": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-sunscreen",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/sunblock4_400x.png?v=1784634550",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/sunblock4.png?v=1784634550",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 20.801209932067948,
+          "whiteAll": 0.9267578125,
+          "red": 0,
+          "edges": 0.001953125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Parishia_Star_Sunscreen_Gel_Ad.png?v=1793627726",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.199,
+        "stats": {
+          "whiteBorder": 0.8652542372881356,
+          "plainBorder": 0.8347457627118644,
+          "centerStd": 30.010646921141014,
+          "whiteAll": 0.63623046875,
+          "red": 0,
+          "edges": 0.007080078125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PARISHIA_Star_Sunscreen_Beach_Glow.png?v=1793627703",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.039,
+        "stats": {
+          "whiteBorder": 0.0211864406779661,
+          "plainBorder": 0.04576271186440678,
+          "centerStd": 29.679556669798828,
+          "whiteAll": 0.068603515625,
+          "red": 0,
+          "edges": 0.011962890625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Sunlit_Sunscreen_Glow_Advertisement.png?v=1793627704",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.022,
+        "stats": {
+          "whiteBorder": 0.016101694915254237,
+          "plainBorder": 0.01440677966101695,
+          "centerStd": 52.82661898233627,
+          "whiteAll": 0.01611328125,
+          "red": 0.00048828125,
+          "edges": 0.038818359375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "فيرمنج جل": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-firming-gel",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/FIRMINGGEL_5276dccd-7aa0-4629-be5c-d720c3d59c19_400x.webp?v=1782290932",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/FIRMINGGEL_5276dccd-7aa0-4629-be5c-d720c3d59c19.webp?v=1782290932",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 48.80022848506673,
+          "whiteAll": 0.811767578125,
+          "red": 0,
+          "edges": 0.030517578125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Coffee_Firming_Gel_Beauty_Composition.png?v=1793633746",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.294,
+        "stats": {
+          "whiteBorder": 0.9322033898305084,
+          "plainBorder": 0.9050847457627119,
+          "centerStd": 57.10868885551739,
+          "whiteAll": 0.673583984375,
+          "red": 0.001953125,
+          "edges": 0.04248046875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Floating_Parishia_Star_Firming_Gel_Set.png?v=1793633746",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.84,
+        "stats": {
+          "whiteBorder": 0.514406779661017,
+          "plainBorder": 0.8144067796610169,
+          "centerStd": 43.9787531667181,
+          "whiteAll": 0.590576171875,
+          "red": 0,
+          "edges": 0.031005859375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "ستيفيا": {
+    "page": "https://www.parishiapharma.com/products/parishia-stivia-50-sachets-1-gm",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/stivia_502a5729-5dc9-4504-bc45-bc8ed74b7cbe_400x.webp?v=1782291247",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/stivia_502a5729-5dc9-4504-bc45-bc8ed74b7cbe.webp?v=1782291247",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 38.26050397220855,
+          "whiteAll": 0.67236328125,
+          "red": 0,
+          "edges": 0.0185546875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/1copy.webp?v=1793719439",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.233,
+        "stats": {
+          "whiteBorder": 0.8949152542372881,
+          "plainBorder": 0.8440677966101695,
+          "centerStd": 50.99976887369978,
+          "whiteAll": 0.4609375,
+          "red": 0,
+          "edges": 0.042236328125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_1_4a455c12-e1b0-4aad-841d-58e62fa942bf.webp?v=1793719439",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.487,
+        "stats": {
+          "whiteBorder": 0.3889830508474576,
+          "plainBorder": 0.49745762711864405,
+          "centerStd": 47.76018777097194,
+          "whiteAll": 0.25927734375,
+          "red": 0,
+          "edges": 0.100341796875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "توربوسيتا قهوة": {
+    "page": "https://www.parishiapharma.com/products/turbo-cita-%D8%A8%D9%86%D9%83%D9%87%D8%A9-%D8%A7%D9%84%D9%82%D9%87%D9%88%D9%87",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITACOFFEE_085f8d09-01c5-471f-a2d9-8e1f6d202599_400x.webp?v=1782291401",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITACOFFEE_085f8d09-01c5-471f-a2d9-8e1f6d202599.webp?v=1782291401",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 60.16828578749919,
+          "whiteAll": 0.58251953125,
+          "red": 0,
+          "edges": 0.04345703125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_9420ad8e-c069-4f88-847a-c563a6512a1b.webp?v=1793634495",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.107,
+        "stats": {
+          "whiteBorder": 0.8576271186440678,
+          "plainBorder": 0.8127118644067797,
+          "centerStd": 65.53100376247589,
+          "whiteAll": 0.461669921875,
+          "red": 0,
+          "edges": 0.090087890625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_6ae1818b-3ac3-4dab-a17f-35640631fea7.webp?v=1793634495",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.03,
+        "stats": {
+          "whiteBorder": 0.7898305084745763,
+          "plainBorder": 0.7059322033898305,
+          "centerStd": 82.99755555438153,
+          "whiteAll": 0.513671875,
+          "red": 0,
+          "edges": 0.076904296875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_0de59f97-e6f4-47dc-ae82-8c9b7c6ed735.webp?v=1793634495",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.366,
+        "stats": {
+          "whiteBorder": 0.5076271186440678,
+          "plainBorder": 0.12033898305084746,
+          "centerStd": 61.266541297071925,
+          "whiteAll": 0.350341796875,
+          "red": 0,
+          "edges": 0.135986328125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "توربوسيتا تفاح": {
+    "page": "https://www.parishiapharma.com/products/85258675",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_032626f5-9846-40cf-ad18-7f42d63bb485_400x.webp?v=1786371804",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.399,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_032626f5-9846-40cf-ad18-7f42d63bb485.webp?v=1786371804",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.399,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 67.08480202466811,
+          "whiteAll": 0.783935546875,
+          "red": 0.013427734375,
+          "edges": 0.045166015625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_3.webp?v=1793809471",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.325,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 63.30465310865944,
+          "whiteAll": 0.7783203125,
+          "red": 0.017578125,
+          "edges": 0.05224609375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_3.webp?v=1793809471",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.39,
+        "stats": {
+          "whiteBorder": 0.3398305084745763,
+          "plainBorder": 0.3983050847457627,
+          "centerStd": 61.05778803237662,
+          "whiteAll": 0.336669921875,
+          "red": 0.015625,
+          "edges": 0.078125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "توربوسيتا ليمون": {
+    "page": "https://www.parishiapharma.com/products/turbo-cita-%D8%A8%D9%86%D9%83%D9%87%D8%A9-%D9%84%D9%85%D9%88%D9%86",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_3c605937-3d9c-420f-b3eb-594b0c784ad4_400x.webp?v=1786371750",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_3c605937-3d9c-420f-b3eb-594b0c784ad4.webp?v=1786371750",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 47.08667373622942,
+          "whiteAll": 0.78076171875,
+          "red": 0,
+          "edges": 0.0068359375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_2_c42dba41-eb61-4ee8-a04e-a0e6b4fb9774.webp?v=1793809325",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.777,
+        "stats": {
+          "whiteBorder": 0.5805084745762712,
+          "plainBorder": 0.4915254237288136,
+          "centerStd": 42.46586032418344,
+          "whiteAll": 0.447509765625,
+          "red": 0,
+          "edges": 0.044921875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/1_copy_860331b7-bfa6-4912-91b3-11837cece3bf.webp?v=1793809325",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0,
+        "stats": {
+          "error": "HTTP 403"
+        }
+      }
+    ]
+  },
+  "توربوسيتا سوبيا": {
+    "page": "https://www.parishiapharma.com/products/turbo-cita-%D8%A8%D9%86%D9%83%D8%A9-%D8%A7%D9%84%D8%B3%D9%88%D8%A8%D9%8A%D8%A7",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_7dca51b2-a086-4de7-9093-d116ae06dcb9_400x.webp?v=1786371514",
+    "source": "product.json",
+    "images": 3,
+    "score": 0.05,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_7dca51b2-a086-4de7-9093-d116ae06dcb9.webp?v=1786371514",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.05,
+        "stats": {
+          "error": "HTTP 403"
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_1_7d9b9baa-293b-4a9f-aa82-ffe1684f3aee.webp?v=1793809051",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0,
+        "stats": {
+          "error": "HTTP 403"
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_48c2d6d1-8813-41d0-8a4f-176ddaa0c39e.webp?v=1793809051",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0,
+        "stats": {
+          "error": "HTTP 403"
+        }
+      }
+    ]
+  },
+  "توربوسيتا تمر هندي": {
+    "page": "https://www.parishiapharma.com/products/turbo-cita-%D8%A8%D9%86%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D9%85%D8%B1-%D8%A7%D9%84%D9%87%D9%86%D8%AF%D9%8A-2",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_2_400x.webp?v=1793809191",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.4,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_2.webp?v=1793809191",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.4,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 59.043677991889396,
+          "whiteAll": 0.739501953125,
+          "red": 0,
+          "edges": 0.04931640625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_1_703f3225-c94b-40f8-a2ec-d9bec68c2bb1.webp?v=1793809191",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.194,
+        "stats": {
+          "whiteBorder": 0.976271186440678,
+          "plainBorder": 0.9694915254237289,
+          "centerStd": 68.85083978476591,
+          "whiteAll": 0.58349609375,
+          "red": 0.00390625,
+          "edges": 0.128173828125,
+          "w": 2048,
+          "h": 2048
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/TURBOCITA_63285ba0-4604-42c8-a236-df2b3c1c72c8.webp?v=1786371670",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.05,
+        "stats": {
+          "error": "HTTP 403"
+        }
+      }
+    ]
+  },
+  "فات بوم": {
+    "page": "https://www.parishiapharma.com/products/fat-boom-30-cap",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/FATBOOM_28990fe8-7eb2-435b-bb28-3cca01f70984_400x.webp?v=1782290696",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.411,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/FATBOOM_28990fe8-7eb2-435b-bb28-3cca01f70984.webp?v=1782290696",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.411,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 86.8621195733351,
+          "whiteAll": 0.762939453125,
+          "red": 0,
+          "edges": 0.075439453125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_65ec21e0-389d-42f4-9dea-5dc8ed1391d7.webp?v=1793632210",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.25,
+        "stats": {
+          "whiteBorder": 0.9720338983050848,
+          "plainBorder": 0.9305084745762712,
+          "centerStd": 79.96287840898867,
+          "whiteAll": 0.562744140625,
+          "red": 0.012939453125,
+          "edges": 0.07861328125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/key_wrd_copy.webp?v=1793632210",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.58,
+        "stats": {
+          "whiteBorder": 0.48389830508474574,
+          "plainBorder": 0.5872881355932204,
+          "centerStd": 75.25404550866284,
+          "whiteAll": 0.376220703125,
+          "red": 0,
+          "edges": 0.115478515625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "إنسويست": {
+    "page": "https://www.parishiapharma.com/products/insuest",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/INSUEST_ab236778-9091-4f3b-bbaa-caed18f1fa5d_400x.webp?v=1782290728",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/INSUEST_ab236778-9091-4f3b-bbaa-caed18f1fa5d.webp?v=1782290728",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 35.28869650035976,
+          "whiteAll": 0.6982421875,
+          "red": 0,
+          "edges": 0.0048828125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_6a6076b3-01c4-4298-be32-b2e037b808fb.webp?v=1793631810",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.306,
+        "stats": {
+          "whiteBorder": 0.938135593220339,
+          "plainBorder": 0.9203389830508475,
+          "centerStd": 41.79811414614788,
+          "whiteAll": 0.580322265625,
+          "red": 0,
+          "edges": 0.014892578125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_78421ab4-1a16-4b27-b709-ead86a2d1769.webp?v=1793631810",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.582,
+        "stats": {
+          "whiteBorder": 0.4449152542372881,
+          "plainBorder": 0.34152542372881356,
+          "centerStd": 34.845069792596874,
+          "whiteAll": 0.316650390625,
+          "red": 0,
+          "edges": 0.058837890625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "كيرفي إيست": {
+    "page": "https://www.parishiapharma.com/products/curvy-east-dietary-supplement",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/CURVYEAST_d0c433b1-ac44-4463-aa56-d13a82df8017_400x.webp?v=1782290663",
+    "source": "product.json",
+    "images": 2,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/CURVYEAST_d0c433b1-ac44-4463-aa56-d13a82df8017.webp?v=1782290663",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 41.313693389867446,
+          "whiteAll": 0.806640625,
+          "red": 0.00244140625,
+          "edges": 0.019287109375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_c31f838d-bde7-463b-94d0-4222121ace61.webp?v=1793633425",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.244,
+        "stats": {
+          "whiteBorder": 0.9093220338983051,
+          "plainBorder": 0.8372881355932204,
+          "centerStd": 35.88655448331622,
+          "whiteAll": 0.71923828125,
+          "red": 0.001708984375,
+          "edges": 0.016845703125,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "داجو إيست": {
+    "page": "https://www.parishiapharma.com/products/dajoeast-dietary-supplement-chocolate-flavor",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/dajochocolate_400x.webp?v=1783004113",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/dajochocolate.webp?v=1783004113",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 65.80420136103876,
+          "whiteAll": 0.749755859375,
+          "red": 0,
+          "edges": 0.0546875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Chocolate_Supplement_Box_Mockup.png?v=1793789284",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.705,
+        "stats": {
+          "whiteBorder": 0.32966101694915256,
+          "plainBorder": 0.938135593220339,
+          "centerStd": 64.17093398449092,
+          "whiteAll": 0.32470703125,
+          "red": 0,
+          "edges": 0.053955078125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Chocolate_Shake_Supplement_Still_Life_1.png?v=1793789457",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.333,
+        "stats": {
+          "whiteBorder": 0.2330508474576271,
+          "plainBorder": 0.39576271186440676,
+          "centerStd": 71.13436994714858,
+          "whiteAll": 0.215087890625,
+          "red": 0,
+          "edges": 0.08349609375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/DAJOEAST_Chocolate_Supplement_Ad.png?v=1793789292",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": -0.071,
+        "stats": {
+          "whiteBorder": 0.25169491525423726,
+          "plainBorder": 0.10508474576271186,
+          "centerStd": 68.90582539991445,
+          "whiteAll": 0.2451171875,
+          "red": 0,
+          "edges": 0.205810546875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "برودجو أيزوليت فانيليا": {
+    "page": "https://www.parishiapharma.com/products/prodajo-isolate-chocolate-flavor",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PRODAJOVANILLA_1a481fc1-dc0d-42b0-98c8-b93db27098ae_400x.webp?v=1794746735",
+    "source": "product.json (variant: Vanilla)",
+    "images": 1,
+    "score": 1.297
+  },
+  "برودجو أيزوليت شوكولاتة": {
+    "page": "https://www.parishiapharma.com/products/prodajo-isolate-chocolate-flavor",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PRODAJOCHOCOLATE_400x.webp?v=1782291477",
+    "source": "product.json (variant: chocolate)",
+    "images": 1,
+    "score": 1.297
+  },
+  "برودجو أيزوليت فراولة": {
+    "page": "https://www.parishiapharma.com/products/prodajo-isolate-chocolate-flavor",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/PRODAJOstrawberry_66895242-6e28-4d09-966a-72d5d3fa0b0c_400x.webp?v=1794746749",
+    "source": "product.json (variant: strawberry)",
+    "images": 1,
+    "score": 1.294
+  },
+  "شامبو تميمة للأطفال": {
+    "page": "https://www.parishiapharma.com/products/tamima-kids-hair-shampoo",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/hairshampoo_cc797f8c-54e1-41bb-8059-672cf162777e_400x.webp?v=1789458954",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.437,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/hairshampoo_cc797f8c-54e1-41bb-8059-672cf162777e.webp?v=1789458954",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.437,
+        "stats": {
+          "whiteBorder": 0.9915254237288136,
+          "plainBorder": 0.9889830508474576,
+          "centerStd": 29.036490839782292,
+          "whiteAll": 0.872802734375,
+          "red": 0,
+          "edges": 0.004638671875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_69538aa6-a1ef-4664-b3e2-766dd6926c42.webp?v=1793709143",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.398,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 0.9949152542372881,
+          "centerStd": 28.350549035922885,
+          "whiteAll": 0.771728515625,
+          "red": 0,
+          "edges": 0.00341796875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_2_a825c84a-0699-4784-8d1f-8fb1526a42c6.webp?v=1793708620",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.212,
+        "stats": {
+          "whiteBorder": 0.17457627118644067,
+          "plainBorder": 0.0940677966101695,
+          "centerStd": 19.13703077690907,
+          "whiteAll": 0.22705078125,
+          "red": 0,
+          "edges": 0.023193359375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "شاور جل تميمة": {
+    "page": "https://www.parishiapharma.com/products/tamima-kids-shower-gel",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/showergel_400x.png?v=1789461843",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.438,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/showergel.png?v=1789461843",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.438,
+        "stats": {
+          "whiteBorder": 0.9923728813559322,
+          "plainBorder": 0.988135593220339,
+          "centerStd": 105.76835980771813,
+          "whiteAll": 0.053955078125,
+          "red": 0,
+          "edges": 0.036865234375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_6f0cd14c-af96-4a79-a697-3ea98fb4ffe0.webp?v=1793712702",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.38,
+        "stats": {
+          "whiteBorder": 0.9957627118644068,
+          "plainBorder": 0.9601694915254237,
+          "centerStd": 27.86995608241688,
+          "whiteAll": 0.783447265625,
+          "red": 0,
+          "edges": 0.004638671875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_2_72816bbd-dff5-4484-8cde-525c1b32fb38.webp?v=1793712729",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.362,
+        "stats": {
+          "whiteBorder": 0.10932203389830508,
+          "plainBorder": 0.6305084745762712,
+          "centerStd": 22.65309469766915,
+          "whiteAll": 0.148193359375,
+          "red": 0,
+          "edges": 0.009765625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "مرطب بشرة تميمة": {
+    "page": "https://www.parishiapharma.com/products/tamima-kids-skin-moisturizer",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/skinmoistruizer_400x.webp?v=1789462033",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.437,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/skinmoistruizer.webp?v=1789462033",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.437,
+        "stats": {
+          "whiteBorder": 0.9915254237288136,
+          "plainBorder": 0.988135593220339,
+          "centerStd": 25.492518270703762,
+          "whiteAll": 0.884033203125,
+          "red": 0,
+          "edges": 0.001708984375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_2a040556-8ee8-4fc7-a353-e3a440edeeb1.webp?v=1793712887",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.4,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 27.06566486446785,
+          "whiteAll": 0.8271484375,
+          "red": 0,
+          "edges": 0.003173828125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_9f05c475-6257-40c4-b69c-808713ed4e1c.webp?v=1793712887",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.265,
+        "stats": {
+          "whiteBorder": 0.06525423728813559,
+          "plainBorder": 0.49830508474576274,
+          "centerStd": 25.123348806009776,
+          "whiteAll": 0.112060546875,
+          "red": 0,
+          "edges": 0.020263671875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "كريم شعر تميمة": {
+    "page": "https://www.parishiapharma.com/products/tamima-kids-hair-cream",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/haircream_400x.webp?v=1789461387",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.437,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/haircream.webp?v=1789461387",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.437,
+        "stats": {
+          "whiteBorder": 0.9915254237288136,
+          "plainBorder": 0.988135593220339,
+          "centerStd": 27.208682949358757,
+          "whiteAll": 0.880859375,
+          "red": 0,
+          "edges": 0.001708984375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/2_copy_1_f7802364-3825-42b8-9c50-31b2b7dd0b21.webp?v=1793712340",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.4,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 27.555626598222812,
+          "whiteAll": 0.835205078125,
+          "red": 0,
+          "edges": 0.002685546875,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_1_02cd2193-74df-4d19-af1d-832caa357a98.webp?v=1793712340",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.105,
+        "stats": {
+          "whiteBorder": 0.04576271186440678,
+          "plainBorder": 0.14915254237288136,
+          "centerStd": 28.619986260228405,
+          "whiteAll": 0.074462890625,
+          "red": 0,
+          "edges": 0.039306640625,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "هامر شي": {
+    "page": "https://www.parishiapharma.com/products/hammer-she",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/hammershe._400x.png?v=1791375517",
+    "source": "product.json (اختيار يدوي: صورة رقم 1)",
+    "images": 1,
+    "score": null
+  },
+  "هامر هي": {
+    "page": "https://www.parishiapharma.com/products/hammer-he",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/hammerhe_ffcf9d4a-c96c-40e4-9908-c5d8e5cb3b85_400x.webp?v=1788941001",
+    "source": "product.json",
+    "images": 4,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/hammerhe_ffcf9d4a-c96c-40e4-9908-c5d8e5cb3b85.webp?v=1788941001",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 77.72904179069823,
+          "whiteAll": 0.703125,
+          "red": 0.00146484375,
+          "edges": 0.042724609375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Hammer_He_Men_s_Health_Supplement_Infographic.png?v=1793786164",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.138,
+        "stats": {
+          "whiteBorder": 0.8313559322033899,
+          "plainBorder": 0.8805084745762712,
+          "centerStd": 74.8334750235736,
+          "whiteAll": 0.535400390625,
+          "red": 0.001953125,
+          "edges": 0.078125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Hammer_He_Supplement_Box_Portrait.png?v=1793786163",
+        "position": 5,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.749,
+        "stats": {
+          "whiteBorder": 0.6406779661016949,
+          "plainBorder": 0.28728813559322036,
+          "centerStd": 72.67589799693445,
+          "whiteAll": 0.39111328125,
+          "red": 0.001220703125,
+          "edges": 0.0625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/Hammer_He_Supplement_Box_on_Airy_Pedestal.png?v=1793786164",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.419,
+        "stats": {
+          "whiteBorder": 0.3305084745762712,
+          "plainBorder": 0.2211864406779661,
+          "centerStd": 70.35412706022468,
+          "whiteAll": 0.2587890625,
+          "red": 0.001953125,
+          "edges": 0.047607421875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "سينويست": {
+    "page": "https://www.parishiapharma.com/products/sinuest-30-cap",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/download_883fe25c-f014-4ab4-a5b8-ab366ec17b49_400x.webp?v=1795372488",
+    "source": "product.json",
+    "images": 1,
+    "score": 1.45
+  },
+  "نادو إيست": {
+    "page": "https://www.parishiapharma.com/products/nado-east",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/nadoest_141e1fc7-7f93-4bcc-9c03-053cf743a61e_400x.webp?v=1788940720",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/nadoest_141e1fc7-7f93-4bcc-9c03-053cf743a61e.webp?v=1788940720",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 82.05098085952976,
+          "whiteAll": 0.7685546875,
+          "red": 0,
+          "edges": 0.056884765625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/NADO_EAST_Daily_Health_Supplement.png?v=1793787865",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.688,
+        "stats": {
+          "whiteBorder": 0.5847457627118644,
+          "plainBorder": 0.5652542372881356,
+          "centerStd": 79.59257270945051,
+          "whiteAll": 0.456787109375,
+          "red": 0,
+          "edges": 0.109130859375,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/NADO_EAST_Supplement_Box_Display.png?v=1793787864",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.559,
+        "stats": {
+          "whiteBorder": 0.326271186440678,
+          "plainBorder": 0.7432203389830508,
+          "centerStd": 74.02112185973678,
+          "whiteAll": 0.287109375,
+          "red": 0,
+          "edges": 0.0859375,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  },
+  "مساج جل سم النحل": {
+    "page": "https://www.parishiapharma.com/products/parishia-star-massage-cream",
+    "image": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/BEEVENOM_4fabdc5f-75a8-44df-a711-582c2cf9d22b_400x.webp?v=1786370947",
+    "source": "product.json",
+    "images": 3,
+    "score": 1.45,
+    "candidates": [
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/BEEVENOM_4fabdc5f-75a8-44df-a711-582c2cf9d22b.webp?v=1786370947",
+        "position": 1,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.45,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 75.61221921197438,
+          "whiteAll": 0.8154296875,
+          "red": 0,
+          "edges": 0.01611328125,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/1_copy.webp?v=1793634301",
+        "position": 4,
+        "alt": "",
+        "ratio": 1,
+        "score": 1.4,
+        "stats": {
+          "whiteBorder": 1,
+          "plainBorder": 1,
+          "centerStd": 62.2524871125055,
+          "whiteAll": 0.686767578125,
+          "red": 0,
+          "edges": 0.02587890625,
+          "w": 160,
+          "h": 160
+        }
+      },
+      {
+        "src": "https://cdn.shopify.com/s/files/1/0743/7756/0118/files/copy_9636447d-c378-4b9a-9501-40c03ecdc961.webp?v=1793634302",
+        "position": 3,
+        "alt": "",
+        "ratio": 1,
+        "score": 0.248,
+        "stats": {
+          "whiteBorder": 0.017796610169491526,
+          "plainBorder": 0.5754237288135593,
+          "centerStd": 54.25988522329774,
+          "whiteAll": 0.08544921875,
+          "red": 0.000732421875,
+          "edges": 0.0498046875,
+          "w": 160,
+          "h": 160
+        }
+      }
+    ]
+  }
+}

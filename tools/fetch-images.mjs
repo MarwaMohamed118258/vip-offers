@@ -142,9 +142,36 @@ export function scoreStats(st) {
     + (st.centerStd < 8 ? -0.5 : 0);
 }
 
+// النكهات/الأنواع: لو اسم المنتج فيه نكهة والصفحة فيها نسخة (variant) بالنكهة دي، بناخد صورتها
+const FLAVORS = [
+  [/فانيليا|فانيلا|vanilla/i, /vanilla|فانيليا|فانيلا/i],
+  [/فراولة|فراوله|strawberry/i, /strawberry|فراول/i],
+  [/شوكولاتة|شوكولاته|شيكولاتة|شيكولاته|chocolate/i, /chocolate|شوكولا|شيكولا/i],
+  [/ليمون|لمون|lemon/i, /lemon|ليمون|لمون/i],
+  [/تفاح|apple/i, /apple|تفاح/i],
+  [/قهوة|قهوه|coffee/i, /coffee|قهو/i],
+  [/سوبيا|sobia/i, /sobia|سوبيا/i],
+  [/تمر هندي|tamarind/i, /tamarind|تمر/i]
+];
+function variantImages(name, product) {
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (variants.length < 2) return null;
+  for (const [inName, inVariant] of FLAVORS) {
+    if (!inName.test(name)) continue;
+    const v = variants.find((x) => inVariant.test(`${x.title} ${x.option1 || ""} ${x.option2 || ""}`));
+    if (!v) continue;
+    const imgs = (product.images || []).filter((im) => im.id === v.image_id || (im.variant_ids || []).includes(v.id));
+    if (imgs.length) return { imgs, variant: v.title };
+  }
+  return null;
+}
+
 async function pickImage(images) {
   // images: [{ src, width, height, alt, position }]
-  const list = images.filter((im) => im && im.src).sort((a, b) => (a.position || 0) - (b.position || 0));
+  let list = images.filter((im) => im && im.src).sort((a, b) => (a.position || 0) - (b.position || 0));
+  // الـ GIF المتحرّكة غالباً إعلانات، منستخدمهاش إلا لو مفيش غيرها
+  const still = list.filter((im) => !/\.gif(\?|$)/i.test(im.src));
+  if (still.length) list = still;
   if (!list.length) return null;
   const scored = [];
   for (const [i, im] of list.entries()) {
@@ -172,6 +199,9 @@ async function pickImage(images) {
 
 // ---------- التشغيل ----------
 const pages = JSON.parse(fs.readFileSync(INPUT, "utf8").replace(/^\uFEFF/, ""));
+// \u0627\u062E\u062A\u064A\u0627\u0631\u0627\u062A \u064A\u062F\u0648\u064A\u0629 \u0628\u0639\u062F \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629: {"\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062A\u062C": \u0631\u0642\u0645 \u0627\u0644\u0635\u0648\u0631\u0629 (position) \u0641\u064A \u0635\u0641\u062D\u0629 \u0627\u0644\u0645\u0646\u062A\u062C}
+const OVERRIDES_FILE = path.join(HERE, "image-overrides.json");
+const overrides = fs.existsSync(OVERRIDES_FILE) ? JSON.parse(fs.readFileSync(OVERRIDES_FILE, "utf8")) : {};
 const entries = Object.entries(pages).filter(([k, v]) => k.trim() && typeof v === "string" && v.trim());
 console.log(`📦 ${entries.length} منتج`);
 await startBrowser();
@@ -185,9 +215,17 @@ for (const [i, [name, pageUrl]] of entries.entries()) {
     try {
       const json = await get(productJsonUrl(pageUrl), "json");
       const p = json.product || {};
-      const imgs = Array.isArray(p.images) && p.images.length ? p.images : p.image ? [p.image] : [];
-      const pick = await pickImage(imgs);
-      if (pick) { chosen = pick.best; candidates = pick.candidates; source = "product.json"; }
+      const byVariant = variantImages(name, p);
+      const imgs = byVariant ? byVariant.imgs : Array.isArray(p.images) && p.images.length ? p.images : p.image ? [p.image] : [];
+      const forced = Number(overrides[name]) ? imgs.find((im) => im.position === Number(overrides[name])) : null;
+      const pick = forced
+        ? { best: { src: forced.src, position: forced.position, score: null, manual: true }, candidates: [] }
+        : await pickImage(imgs);
+      if (pick) {
+        chosen = pick.best; candidates = pick.candidates;
+        source = forced ? `product.json (اختيار يدوي: صورة رقم ${forced.position})`
+          : byVariant ? `product.json (variant: ${byVariant.variant})` : "product.json";
+      }
     } catch (e) {
       source = `product.json failed (${e.message})`;
     }
