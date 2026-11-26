@@ -97,6 +97,52 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // =====================================================================
+    // Offers Store (متجر العروض للجمهور) — نفس قاعدة البيانات
+    // =====================================================================
+    // الشركات (الاسم، اللوجو، الظهور في VIP / Offers Store) والأسئلة والإجابات: الكل يقرأ، الأدمن بس يكتب
+    match /companies/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /faq/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // طلبات المتجر: أي حد يبعت طلب جديد بحقول متراجعة، والأدمن بس يشوف ويعدّل
+    function validConsumerOrder(d) {
+      return d.keys().hasAll(["customerId", "name", "phone", "governorate", "address", "items", "subtotal", "shipping", "total", "status", "createdAt"])
+        && d.keys().hasOnly(["customerId", "name", "phone", "governorate", "address", "notes", "items", "companies", "itemsCount", "subtotal", "shipping", "total", "status", "createdAt", "lang"])
+        && d.customerId is string && d.customerId.matches("^[A-Za-z0-9]{24,64}$")
+        && isStr(d.name, 1, 100)
+        && d.phone is string && d.phone.matches("^01[0125][0-9]{8}$")
+        && d.governorate in ["القاهرة", "الجيزة", "الإسكندرية", "القليوبية", "الشرقية", "الدقهلية", "الغربية", "المنوفية", "البحيرة",
+             "كفر الشيخ", "دمياط", "بورسعيد", "الإسماعيلية", "السويس", "الفيوم", "بني سويف", "المنيا", "أسيوط",
+             "سوهاج", "قنا", "الأقصر", "أسوان", "البحر الأحمر", "الوادي الجديد", "مطروح", "شمال سيناء", "جنوب سيناء"]
+        && isStr(d.address, 5, 300)
+        && (!("notes" in d) || isStr(d.notes, 0, 500))
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 50
+        && (!("companies" in d) || (d.companies is list && d.companies.size() <= 20))
+        && (!("itemsCount" in d) || isNum(d.itemsCount, 1, 100000))
+        && isNum(d.subtotal, 0, 10000000)
+        && isNum(d.shipping, 0, 100000)
+        && isNum(d.total, 0, 10000000)
+        && (!("lang" in d) || d.lang in ["ar", "en"])
+        && d.status == "جديد"
+        && d.createdAt == request.time;
+    }
+    match /consumerOrders/{orderId} {
+      allow create: if validConsumerOrder(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // المتابعة الشهرية: الأدمن بتكتبه لما الطلب يبقى «اتسلّم»، والعميل بيقرا مستنده بالكود بتاعه بس (get مش list)
+    match /storeFollowups/{customerId} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+    }
+
     // ---------- عدّاد مشاهدات العروض: زيادة 1 بس كل مرة، والأدمن بس يقرأ ----------
     match /views/{offerId} {
       allow create: if request.resource.data.keys().hasOnly(["count"]) && request.resource.data.count == 1;

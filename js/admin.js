@@ -6,6 +6,7 @@ import {
 } from "./utils.js";
 import { compressImage, imageKB } from "./image.js";
 import { initAdminExtras, onAdminTab } from "./admin-extra.js";
+import { initAdminStore, onStoreTab } from "./admin-store.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -103,8 +104,9 @@ $("#logout").addEventListener("click", () => signOut(auth));
 // ---------- التبويبات ----------
 $$("[data-tab]").forEach((b) => b.addEventListener("click", () => {
   $$("[data-tab]").forEach((x) => x.className = "btn " + (x === b ? "btn-purple" : "btn-ghost"));
-  for (const t of ["offers", "products", "orders", "rewards", "stats", "suggestions", "about"]) $(`#tab-${t}`).hidden = b.dataset.tab !== t;
+  for (const x of $$("[data-tab]")) $(`#tab-${x.dataset.tab}`).hidden = x.dataset.tab !== b.dataset.tab;
   onAdminTab(b.dataset.tab);
+  onStoreTab(b.dataset.tab);
 }));
 
 // ---------- قوائم مشتركة (الشركات والأقسام) ----------
@@ -293,6 +295,10 @@ $("#product-form").addEventListener("submit", async (e) => {
     nameEn: $("#p-name-en").value.trim(),
     publicPrice: num($("#p-price").value),
     image: pendingImage,
+    usage: $("#p-usage").value.trim(),
+    warnings: $("#p-warnings").value.trim(),
+    notFor: $("#p-notfor").value.trim(),
+    dietTips: $("#p-diet").value.trim(),
     updatedAt: serverTimestamp()
   };
   const dup = products.find((p) => normTitle(p.name) === normTitle(data.name) && p.id !== editingProductId);
@@ -325,6 +331,11 @@ $("#admin-products").addEventListener("click", async (e) => {
     prefillCompanyEn("p");
     prefillCategoryEn("p");
     $("#p-price").value = p.publicPrice ?? "";
+    $("#p-usage").value = p.usage || "";
+    $("#p-warnings").value = p.warnings || "";
+    $("#p-notfor").value = p.notFor || "";
+    $("#p-diet").value = p.dietTips || "";
+    $(".info-fields").open = !!(p.usage || p.warnings || p.notFor || p.dietTips);
     const img = safeImage(p.image);
     $("#p-image-url").value = img && !img.startsWith("data:") ? img : "";
     setPendingImage(img, img.startsWith("data:") ? `صورة مرفوعة: ${imageKB(img)} KB` : "");
@@ -640,6 +651,7 @@ function offerPayload(o) {
     titleEn: String(o.titleEn || "").trim(),
     imageUrl: safeUrl(o.imageUrl), products: items,
     endDate: isDateStr(o.endDate) ? o.endDate : "",
+    showVip: o.showVip !== false, showStore: o.showStore !== false, freeShipping: o.freeShipping === true,
     totalPublic: t.totalPublic, totalOffer: t.totalOffer, discount: t.discount, itemsCount: t.items,
     updatedAt: serverTimestamp()
   };
@@ -665,8 +677,10 @@ $("#offer-form").addEventListener("submit", async (e) => {
   if (!items.length) return showMsg(msg, "ضيفي منتج واحد على الأقل");
   const data = offerPayload({
     company: $("#o-company").value, category: readCategory($("#o-category")),
-    name: $("#o-name").value, titleEn: $("#o-name-en").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items
+    name: $("#o-name").value, titleEn: $("#o-name-en").value, imageUrl: $("#o-image").value, endDate: $("#o-end").value, products: items,
+    showVip: $("#o-show-vip").checked, showStore: $("#o-show-store").checked, freeShipping: $("#o-free-ship").checked
   });
+  if (!data.showVip && !data.showStore && !confirm("العرض مش هيظهر في أي تطبيق (VIP ولا Offers Store). تحفظيه كده؟")) return;
   if (!data.category) return showMsg(msg, "اختاري القسم");
   const btn = $("#save-btn"); btn.disabled = true;
   try {
@@ -851,7 +865,8 @@ function renderAdminList() {
       : st.endingSoon ? `<span class="badge badge-ending">${endLabel(st.daysLeft)}</span>`
       : st.isNew ? `<span class="badge badge-new">جديد</span>` : "";
     return `<div class="admin-item"${st.expired ? ' style="opacity:.6"' : ""}>
-      <div class="info"><b>${esc(o.name)} ${tag}</b><small>${esc(o.company)} · ${esc(o.category)} · ${money(t.totalOffer)} (خصم ${t.discount}%)</small></div>
+      <div class="info"><b>${esc(o.name)} ${tag}</b><small>${esc(o.company)} · ${esc(o.category)} · ${money(t.totalOffer)} (خصم ${t.discount}%)</small>
+        <div><span class="tag-mini${o.showVip === false ? " off" : ""}">VIP</span><span class="tag-mini${o.showStore === false ? " off" : ""}">Store</span>${o.freeShipping ? `<span class="tag-mini">🚚 شحن مجاني</span>` : ""}</div></div>
       <button class="btn btn-sm btn-ghost" data-edit="${esc(o.id)}">تعديل</button>
       <button class="btn btn-sm btn-red" data-del="${esc(o.id)}">مسح</button>
     </div>`;
@@ -873,6 +888,9 @@ $("#admin-offers").addEventListener("click", async (e) => {
     prefillCategoryEn("o");
     $("#o-image").value = o.imageUrl || "";
     $("#o-end").value = isDateStr(o.endDate) ? o.endDate : "";
+    $("#o-show-vip").checked = o.showVip !== false;
+    $("#o-show-store").checked = o.showStore !== false;
+    $("#o-free-ship").checked = o.freeShipping === true;
     $("#products").innerHTML = "";
     (o.products?.length ? mergeItems(o.products) : [{}]).forEach(addItemRow);
     itemsChanged();
@@ -1000,3 +1018,7 @@ $("#about-form").addEventListener("submit", async (e) => {
 fillLists();
 resetForm();
 initAdminExtras({ getOffers: () => offers, getProducts: () => products });
+initAdminStore({
+  getOffers: () => offers, getProducts: () => products, getNamesEn: () => namesEn,
+  companiesFromData: () => [...new Set([...offers, ...products].map((o) => o.company).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"))
+});

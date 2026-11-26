@@ -1,0 +1,106 @@
+/* متجر العروض: نفس تصميم التطبيق (style.css) بألوان أفتح خاصة بالمتجر */
+:root {
+  --purple: #0f8f82;        /* اللون الأساسي (تيل فاتح) */
+  --purple-dark: #0a5e56;
+  --purple-soft: #e3f5f2;
+  --yellow: #ffc15e;        /* لون الإبراز (مشمشي فاتح) */
+  --red: #e0475f;
+  --green: #1a9d55;
+  --text: #17312e;
+  --muted: #5d7572;
+  --bg: #f4faf9;
+  --card: #ffffff;
+  --line: #d6ebe7;
+  --shadow: 0 2px 12px rgba(15, 143, 130, .08);
+}
+
+body.store { background: var(--bg); }
+
+/* الهيدر: تدرّج فاتح */
+.store .app-header {
+  background: linear-gradient(135deg, #12a394 0%, #3fc1b0 100%);
+  box-shadow: 0 6px 18px rgba(18, 163, 148, .18);
+}
+.store .brand-badge { background: #fff; color: var(--purple); }
+.store .brand-badge svg { width: 26px; height: 26px; }
+.store .hdr-btn { display: grid; place-items: center; text-decoration: none; }
+
+.store .offer-card, .store .panel, .store .product-card { box-shadow: var(--shadow); }
+.store .bottom-nav { box-shadow: 0 -2px 12px rgba(15, 143, 130, .08); }
+.store .bottom-nav a.active svg { color: var(--purple); }
+.store .skeleton { background: linear-gradient(90deg, #e7f3f1 25%, #f4faf9 50%, #e7f3f1 75%); background-size: 200% 100%; }
+.store .modal { background: rgba(14, 45, 42, .45); }
+.store .discount-badge { background: var(--red); box-shadow: 0 2px 6px rgba(224, 71, 95, .3); }
+.store .tag-icon { background: #fff; color: var(--purple); }
+.store .welcome { background: linear-gradient(160deg, #0f8f82 0%, #35b8a7 100%); }
+.store .welcome-sub { margin: -14px 0 22px; font-size: 18px; font-weight: 700; opacity: .92; }
+.store .features li svg { color: #fff; }
+.store .welcome .btn-yellow { background: #fff; color: var(--purple-dark); }
+.store .seg button.active .count { background: #fff; color: var(--purple-dark); }
+.store .notif-banner { background: #fff4dc; }
+
+/* الشركة: لوجو + اسم */
+.co-logo { width: 26px; height: 26px; border-radius: 7px; object-fit: contain; background: #fff; border: 1px solid var(--line); flex: none; }
+.company.center { justify-content: center; }
+.company-chips { margin-top: 4px; }
+.co-chip { display: inline-flex; align-items: center; gap: 8px; }
+.co-chip img { width: 26px; height: 26px; border-radius: 50%; object-fit: contain; background: #fff; flex: none; }
+.co-chip.active img { box-shadow: 0 0 0 2px #fff; }
+
+.badge-free { background: #e2f6ea; color: var(--green); }
+.offer-hero { margin-top: 16px; border-radius: 16px; width: 100%; }
+.item-cell a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+
+/* الشحن والإجمالي */
+.ship-note { margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--purple-soft); color: var(--purple-dark); font-weight: 700; font-size: 15px; }
+.ship-note.free { background: #e2f6ea; color: var(--green); }
+.sum-row { display: flex; justify-content: space-between; font-size: 17px; padding: 4px 0; }
+.sum-row b { font-weight: 800; }
+.free-text { color: var(--green); }
+.store .grand { color: var(--purple-dark); border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 6px; }
+.store .progress { height: 10px; border-radius: 999px; background: var(--purple-soft); overflow: hidden; margin-top: 8px; }
+.store .progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--purple), #3fc1b0); border-radius: inherit; }
+.cod-note { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-weight: 700; color: var(--muted); font-size: 15px; }
+.cod-note svg { width: 22px; height: 22px; color: var(--green); flex: none; }
+.cart-item s { color: var(--muted); }
+.cart-item .badge { margin-top: 4px; }
+
+/* معلومات المنتج */
+.info-panel { display: grid; gap: 12px; }
+.info-block h3 { margin: 0 0 4px; font-size: 17px; color: var(--purple-dark); }
+.info-block p { margin: 0; line-height: 1.8; }
+.info-block { padding: 10px 12px; border-radius: 12px; background: #f7fbfa; border: 1px solid var(--line); }
+.info-warnings, .info-notFor { background: #fff7f0; border-color: #f6dcc5; }
+.health-note {
+  margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.7;
+  background: #fff8e6; color: #6a5420; border: 1px solid #f5e2b0;
+}
+
+/* المساعد (شات) */
+.chat-log { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; min-height: 120px; }
+.msg { display: flex; }
+.msg.user { justify-content: flex-start; }
+.msg.bot { justify-content: flex-end; }
+[dir="rtl"] .msg.user { justify-content: flex-start; }
+.bubble { max-width: 86%; padding: 10px 14px; border-radius: 18px; line-height: 1.75; font-size: 16px; overflow-wrap: anywhere; }
+.msg.user .bubble { background: var(--purple); color: #fff; border-start-start-radius: 6px; }
+.msg.bot .bubble { background: #fff; border: 1px solid var(--line); border-start-end-radius: 6px; box-shadow: var(--shadow); }
+.msg-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.msg-tags span { background: var(--purple-soft); color: var(--purple-dark); font-size: 12.5px; font-weight: 700; padding: 1px 10px; border-radius: 999px; }
+.chat-wa { display: flex; margin-top: 10px; width: max-content; }
+.chat-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.suggest-chip { min-height: 40px; font-size: 14.5px; padding: 6px 14px; white-space: normal; text-align: start; line-height: 1.4; }
+.chat-form { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; }
+.chat-form .search-wrap { margin: 0; }
+.chat-form .select { margin: 0; }
+.send-btn { min-height: 52px; width: 56px; padding: 0; flex: none; }
+.send-btn svg { width: 22px; height: 22px; }
+[dir="rtl"] .send-btn svg { transform: scaleX(-1); }
+
+/* من نحن */
+.about-logo { width: 88px; height: 88px; margin: 0 auto 10px; border-radius: 24px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #12a394, #3fc1b0); }
+.about-logo svg { width: 52px; height: 52px; }
+.trust-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+.trust-row div { background: #fff; border-radius: 14px; padding: 12px 8px; text-align: center; font-weight: 700; font-size: 13.5px; line-height: 1.5; box-shadow: var(--shadow); display: grid; gap: 6px; justify-items: center; }
+.trust-row svg { width: 28px; height: 28px; color: var(--purple); }
+.followup-modal h2 { margin: 0 0 8px; line-height: 1.6; color: var(--purple-dark); }

@@ -6,13 +6,15 @@ try {
 }
 
 // غيّري الرقم ده مع كل تحديث عشان الكاش القديم يتمسح
-const VERSION = "vip-v14";
+const VERSION = "vip-v15";
 const SHELL = [
   "/",
   "/index.html",
   "/css/style.css",
   "/js/app.js",
   "/js/utils.js",
+  "/js/core.js",
+  "/js/store-shared.js",
   "/js/notifications.js",
   "/js/firebase-config.js",
   "/js/firebase.js",

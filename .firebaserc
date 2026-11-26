@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "vip-offers-961c8"
+  },
+  "targets": {
+    "vip-offers-961c8": {
+      "hosting": {
+        "vip": [
+          "vip-offers-961c8"
+        ],
+        "store": [
+          "offers-store-961c8"
+        ]
+      }
+    }
   }
 }

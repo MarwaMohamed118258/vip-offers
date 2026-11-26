@@ -42,6 +42,129 @@
         <button class="btn btn-ghost" data-tab="suggestions">الاقتراحات</button>
         <button class="btn btn-ghost" data-tab="about">مانجر مروة</button>
       </div>
+      <div class="admin-tabs store-tabs">
+        <span class="tabs-label">🛍️ Offers Store</span>
+        <button class="btn btn-ghost" data-tab="sorders">طلبات Offers Store</button>
+        <button class="btn btn-ghost" data-tab="followup">متابعة شهرية</button>
+        <button class="btn btn-ghost" data-tab="faq">أسئلة وإجابات</button>
+        <button class="btn btn-ghost" data-tab="companies">الشركات</button>
+        <button class="btn btn-ghost" data-tab="ssettings">إعدادات Offers Store</button>
+      </div>
+
+      <!-- Offers Store: الطلبات -->
+      <div id="tab-sorders" hidden>
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h2 class="section-title" style="margin:0">🛍️ طلبات Offers Store</h2>
+            <button type="button" id="so-refresh" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+          </div>
+          <div id="so-filters" class="chips"></div>
+          <div class="row-gap" style="margin:6px 0 12px">
+            <input id="so-search" class="input" type="search" placeholder="ابحثي بالاسم أو الموبايل" style="flex:2;min-width:180px">
+            <select id="so-company" class="select" style="flex:1;min-width:150px"><option value="">كل الشركات</option></select>
+          </div>
+          <p class="meta" style="margin:0 0 10px">لما تخلّي الطلب «اتسلّم»: بعد 30 يوم العميل بيشوف رسالة «محتاج تجدد الكورس؟» أول ما يفتح التطبيق، وبيظهر في «متابعة شهرية».</p>
+          <div id="so-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+      </div>
+
+      <!-- Offers Store: متابعة شهرية -->
+      <div id="tab-followup" hidden>
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h2 class="section-title" style="margin:0">💚 متابعة شهرية</h2>
+            <button type="button" id="fu-refresh" class="btn btn-sm btn-ghost">🔄 تحديث</button>
+          </div>
+          <p class="meta" style="margin:0 0 10px">العملاء اللي طلبهم اتسلّم من 30 يوم أو أكتر. ابعتيلهم على واتساب، وبعدين اضغطي «اتواصلت» عشان يتشالوا من هنا.</p>
+          <div id="fu-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+      </div>
+
+      <!-- Offers Store: أسئلة وإجابات -->
+      <div id="tab-faq" hidden>
+        <div class="panel">
+          <h2 class="section-title" id="faq-form-title">سؤال جديد</h2>
+          <form id="faq-form" class="form-grid">
+            <div class="field"><label for="faq-company">الشركة</label><select id="faq-company" class="select"></select></div>
+            <div class="field"><label for="faq-product">المنتج</label><select id="faq-product" class="select"></select></div>
+            <div class="field"><label for="faq-question">السؤال (بيظهر كزرار مقترح)</label><input id="faq-question" class="input" required maxlength="200"></div>
+            <div class="field"><label for="faq-keywords">الكلمات المفتاحية (افصلي بينهم بـ ، )</label><input id="faq-keywords" class="input" maxlength="500" placeholder="مثلاً: شحن، توصيل، مصاريف الشحن"></div>
+            <div class="field"><label for="faq-answer">الإجابة</label><textarea id="faq-answer" class="textarea" required maxlength="2000" style="min-height:120px"></textarea>
+              <p class="meta" style="margin:4px 0 0">ممكن تكتبي {shippingFee} و {freeThreshold} وهيتبدّلوا بالأرقام من الإعدادات. من غير وعود علاجية.</p></div>
+            <div class="field"><label for="faq-order">الترتيب (الأصغر يظهر الأول)</label><input id="faq-order" class="input" type="number" inputmode="numeric" value="100"></div>
+            <div class="row-gap">
+              <button type="submit" class="btn btn-purple" style="flex:1" id="faq-save">حفظ السؤال</button>
+              <button type="button" class="btn btn-ghost" id="faq-cancel" hidden>إلغاء التعديل</button>
+            </div>
+            <p id="faq-msg" class="error" hidden></p>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="row-gap" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h2 class="section-title" style="margin:0">الأسئلة (<span id="faq-count">0</span>)</h2>
+            <button type="button" id="faq-starters" class="btn btn-sm btn-yellow">ضيفي الأسئلة العامة الأساسية</button>
+          </div>
+          <p class="meta" style="margin:0 0 10px">المساعد بيرد من الأسئلة دي بس (ومن معلومات المنتجات في تبويب «المنتجات»). لو ملقاش إجابة بيقول «هتواصل معاك متخصصة على طول» وزرار واتساب.</p>
+          <div class="row-gap" style="margin-bottom:10px">
+            <input id="faq-search" class="input" type="search" placeholder="ابحثي في الأسئلة" style="flex:2;min-width:180px">
+            <input id="faq-test" class="input" placeholder="جرّبي المساعد: اكتبي سؤال" style="flex:2;min-width:180px">
+          </div>
+          <div id="faq-test-result" class="calc-box" style="font-weight:600;margin-bottom:10px" hidden></div>
+          <div id="faq-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+      </div>
+
+      <!-- Offers Store: الشركات -->
+      <div id="tab-companies" hidden>
+        <div class="panel">
+          <h2 class="section-title" id="co-form-title">شركة جديدة</h2>
+          <form id="co-form" class="form-grid">
+            <div class="field"><label for="co-name">اسم الشركة (بالظبط زي ما هو مكتوب في العروض والمنتجات)</label><input id="co-name" class="input" required maxlength="100" list="companies"></div>
+            <div class="field"><label for="co-name-en">الاسم بالإنجليزي</label><input id="co-name-en" class="input" dir="ltr" maxlength="100"></div>
+            <div class="field">
+              <label>اللوجو</label>
+              <div class="img-picker">
+                <img id="co-preview" class="img-preview" alt="" hidden>
+                <div class="form-grid" style="flex:1">
+                  <button type="button" id="co-pick" class="btn btn-ghost">📷 اختاري صورة اللوجو</button>
+                  <input type="file" id="co-file" accept="image/*" hidden>
+                  <input id="co-logo-url" class="input" type="url" dir="ltr" placeholder="أو الصقي رابط https://...">
+                  <button type="button" id="co-clear" class="btn btn-sm btn-ghost" hidden>شيلي اللوجو</button>
+                </div>
+              </div>
+            </div>
+            <label class="switch-row"><input type="checkbox" id="co-vip" checked><span>تظهر في VIP</span></label>
+            <label class="switch-row"><input type="checkbox" id="co-store" checked><span>تظهر في Offers Store</span></label>
+            <div class="field"><label for="co-order">الترتيب في الفلتر (الأصغر الأول)</label><input id="co-order" class="input" type="number" inputmode="numeric" value="100"></div>
+            <div class="row-gap">
+              <button type="submit" class="btn btn-purple" style="flex:1" id="co-save">حفظ الشركة</button>
+              <button type="button" class="btn btn-ghost" id="co-cancel" hidden>إلغاء التعديل</button>
+            </div>
+            <p id="co-msg" class="error" hidden></p>
+          </form>
+        </div>
+        <div class="panel">
+          <h2 class="section-title">الشركات</h2>
+          <p class="meta" style="margin:0 0 10px">الشركة اللي مش متسجّلة هنا بتظهر في التطبيقين عادي. سجّليها عشان تحطي لوجو أو تخفيها من واحد منهم.</p>
+          <div id="co-list" class="admin-list"><p class="state-msg">جاري التحميل…</p></div>
+        </div>
+      </div>
+
+      <!-- Offers Store: الإعدادات -->
+      <div id="tab-ssettings" hidden>
+        <div class="panel">
+          <form id="ss-form" class="form-grid">
+            <p class="meta" style="margin:0">إعدادات موقع Offers Store (<a href="https://offers-store-961c8.web.app" target="_blank" rel="noopener" dir="ltr">offers-store-961c8.web.app</a>).</p>
+            <div class="field"><label for="ss-wa">رقم واتساب الطلبات</label><input id="ss-wa" class="input" type="tel" dir="ltr" required placeholder="01xxxxxxxxx"></div>
+            <div class="field"><label for="ss-fee">مصاريف الشحن (ج)</label><input id="ss-fee" class="input" type="number" min="0" step="1" inputmode="numeric" required></div>
+            <div class="field"><label for="ss-threshold">الشحن مجاني لو الطلب بعد الخصم يوصل لـ (ج)</label><input id="ss-threshold" class="input" type="number" min="0" step="1" inputmode="numeric" required></div>
+            <div class="field"><label for="ss-about">من نحن (كل سطر لوحده، والسطر اللي يبدأ بـ ✔️ بيظهر في قائمة، ومن غير اسم شركة)</label><textarea id="ss-about" class="textarea" style="min-height:180px"></textarea></div>
+            <div class="field"><label for="ss-about-en">من نحن بالإنجليزي</label><textarea id="ss-about-en" class="textarea" dir="ltr" style="min-height:180px"></textarea></div>
+            <button type="submit" class="btn btn-purple btn-block">حفظ الإعدادات</button>
+            <p id="ss-msg" class="error" hidden></p>
+          </form>
+        </div>
+      </div>
 
       <!-- الاقتراحات -->
       <div id="tab-suggestions" hidden>
@@ -129,6 +252,17 @@
               <p id="p-img-info" class="meta" style="margin:6px 0 0" hidden></p>
             </div>
 
+            <details class="info-fields">
+              <summary>معلومات للمساعد في Offers Store (اختياري)</summary>
+              <div class="form-grid" style="margin-top:10px">
+                <p class="meta" style="margin:0">بتظهر في صفحة المنتج في Offers Store، والمساعد بيرد منها. معلومات عامة بس ومن غير وعود علاجية.</p>
+                <div class="field"><label for="p-usage">طريقة الاستخدام</label><textarea id="p-usage" class="textarea" maxlength="1500" style="min-height:80px"></textarea></div>
+                <div class="field"><label for="p-warnings">تحذيرات</label><textarea id="p-warnings" class="textarea" maxlength="1500" style="min-height:80px"></textarea></div>
+                <div class="field"><label for="p-notfor">مين ميستخدموش</label><textarea id="p-notfor" class="textarea" maxlength="1500" style="min-height:80px"></textarea></div>
+                <div class="field"><label for="p-diet">نصايح الأكل</label><textarea id="p-diet" class="textarea" maxlength="1500" style="min-height:80px"></textarea></div>
+              </div>
+            </details>
+
             <div class="row-gap">
               <button type="submit" class="btn btn-purple" style="flex:1" id="p-save-btn">حفظ المنتج</button>
               <button type="button" class="btn btn-ghost" id="p-cancel-edit" hidden>إلغاء التعديل</button>
@@ -190,6 +324,12 @@
               <label for="o-end">تاريخ انتهاء العرض (اختياري)</label>
               <input id="o-end" class="input" type="date">
               <p class="meta" style="margin:4px 0 0">بعد التاريخ ده العرض بيستخبى من العملاء لوحده (بيفضل ظاهر هنا ومكتوب عليه «منتهي»).</p>
+            </div>
+            <div class="field">
+              <label>الظهور والشحن</label>
+              <label class="switch-row"><input type="checkbox" id="o-show-vip" checked><span>يظهر في VIP</span></label>
+              <label class="switch-row"><input type="checkbox" id="o-show-store" checked><span>يظهر في Offers Store</span></label>
+              <label class="switch-row"><input type="checkbox" id="o-free-ship"><span>شحن مجاني (Offers Store)</span></label>
             </div>
             <div class="field"><label for="o-image">رابط صورة (اختياري)</label><input id="o-image" class="input" type="url" dir="ltr" placeholder="https://..."></div>
 

@@ -501,3 +501,15 @@ table.items tfoot td { font-weight: 900; background: #fbf8fe; border-bottom: 0; 
 .status-btns.sg-st .btn { font-size: 12.5px; }
 .suggest-hint span:first-child { flex: 1; }
 .unit-price { display: block; color: var(--muted); font-size: 12.5px; font-weight: 700; }
+
+/* ---------- Admin: Offers Store ---------- */
+.store-tabs { align-items: center; padding-top: 10px; border-top: 1px dashed var(--line); }
+.store-tabs .tabs-label { flex: 1 1 100%; font-weight: 800; color: var(--muted); font-size: 14px; }
+.switch-row { display: flex; align-items: center; gap: 10px; font-weight: 700; padding: 6px 0; cursor: pointer; }
+.switch-row input { width: 22px; height: 22px; accent-color: var(--purple); flex: none; }
+.info-fields { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: #fbf9fe; }
+.info-fields summary { font-weight: 800; cursor: pointer; color: var(--purple); }
+.tag-mini { display: inline-block; font-size: 12px; font-weight: 800; padding: 0 8px; border-radius: 999px; background: var(--purple-soft); color: var(--purple); margin-inline-start: 4px; }
+.tag-mini.off { background: #eee; color: #777; text-decoration: line-through; }
+.order-card .addr { margin: 6px 0 0; font-size: 15px; }
+.order-sums { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }

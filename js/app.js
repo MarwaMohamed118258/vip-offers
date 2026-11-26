@@ -15,6 +15,7 @@ import {
 } from "./notifications.js";
 import { t, isEn, fmtMoney as money, applyStatic, toggleLang } from "./i18n.js";
 import { setupVoiceSearch } from "./voice.js";
+import { companyIndex, offerInVip, companyVisible } from "./store-shared.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -29,6 +30,7 @@ const RATINGS_KEY = "vip_ratings";
 const LOYALTY_KEY = "vip_loyalty";
 const LEVELS_KEY = "vip_levels";
 const RATED_KEY = "vip_rated";
+const COMPANIES_KEY = "vip_companies";
 const APP_URL = "https://vip-offers-961c8.web.app";
 
 const state = {
@@ -43,7 +45,8 @@ const state = {
   bestsellers: [],                      // أكتر 5 عروض اتطلبت (settings/bestsellers)
   ratingFor: ratingsIndex([]),          // تقييمات حقيقية بس (ratings)
   loyalty: null, loyaltyLoaded: false,  // loyalty/{customerId}
-  installPrompt: null                   // beforeinstallprompt (أندرويد/كروم)
+  installPrompt: null,                  // beforeinstallprompt (أندرويد/كروم)
+  cidx: companyIndex([])                // الشركات (companies): الظهور في VIP أو لأ
 };
 
 // ---------- تخزين محلي آمن ----------
@@ -80,7 +83,9 @@ const itemName = (it) => (isEn() && productNameEn(it)) || it.name || "";
 
 // ---------- العروض ----------
 // العروض المنتهية بتستخبى من العملاء تلقائياً
-const visibleOffers = () => state.offers.filter((o) => !offerStatus(o).expired);
+// والعروض أو الشركات اللي الأدمن قفلت «يظهر في VIP» بتاعها مبتظهرش هنا
+const visibleOffers = () => state.offers.filter((o) => !offerStatus(o).expired && offerInVip(o, state.cidx));
+const productInVip = (p) => companyVisible(state.cidx, p.company, "showVip");
 const findAvailable = (id) => visibleOffers().find((o) => o.id === id) || null;
 
 // السطور المكررة لنفس المنتج (2 × 267 + 1 × 266) بتتعرض سطر واحد بالكمية الكلية
@@ -119,6 +124,8 @@ async function loadSettings() {
   const savedLv = readJSON(LEVELS_KEY, {});
   state.levels = sortLevels(savedLv.levels);
   state.bestsellers = Array.isArray(savedLv.bestsellers) ? savedLv.bestsellers : [];
+  state.cidx = companyIndex(readJSON(COMPANIES_KEY, []));
+  loadCompanies();
   try {
     const { db, doc, getDoc } = await firestore();
     const [cats, names, loyalty, best] = await Promise.all([
@@ -145,6 +152,20 @@ async function loadSettings() {
   }
   state.levelsLoaded = true;
   rerender();
+}
+
+// الشركات: اسم + هل تظهر في VIP (الشركة اللي ملهاش مستند بتظهر عادي)
+async function loadCompanies() {
+  try {
+    const { db, collection, getDocs } = await firestore();
+    const snap = await getDocs(collection(db, "companies"));
+    if (snap.metadata.fromCache) throw new Error("offline");
+    const list = snap.docs.map((d) => ({ name: str(d.data().name), showVip: d.data().showVip !== false }));
+    state.cidx = companyIndex(list);
+    store.set(COMPANIES_KEY, JSON.stringify(list));
+    if (state.fresh) pruneCart();
+    rerender();
+  } catch (e) { console.warn("companies", e.message || e); }
 }
 
 // ---------- التقييمات (حقيقية بس: كل تقييم مربوط بطلب اتسلّم) ----------
@@ -531,7 +552,7 @@ function productCard(p) {
 function renderCatalog() {
   const body = $("#catalog-body");
   if (!state.productsLoaded) { body.innerHTML = `<div class="skeleton" style="margin-top:16px"></div>`; return; }
-  const list = state.products.filter((p) => productMatches(p, state.productSearch));
+  const list = state.products.filter((p) => productInVip(p) && productMatches(p, state.productSearch));
   if (!list.length) {
     body.innerHTML = `<p class="state-msg">${state.productSearch.trim() ? t("noResults") : t("noProducts")}</p>`;
     return;
@@ -558,7 +579,7 @@ function offersWithProduct(p) {
 function renderProduct(id) {
   const body = $("#product-body");
   const p = state.productById.get(id);
-  if (!p) {
+  if (!p || !productInVip(p)) {
     $("#p-title").textContent = t("navProducts");
     $("#p-sub").textContent = "";
     body.innerHTML = state.productsLoaded
