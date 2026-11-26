@@ -1,0 +1,1614 @@
+{
+  "offers": [
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض داجو إيست: علبتين والتالتة بنص التمن",
+      "titleEn": "DajoEast: 2 boxes + 3rd at half price",
+      "items": [
+        {
+          "name": "داجو إيست",
+          "qty": 2,
+          "publicPrice": 220,
+          "offerPrice": 183
+        },
+        {
+          "name": "داجو إيست",
+          "qty": 1,
+          "publicPrice": 220,
+          "offerPrice": 184
+        }
+      ],
+      "totalPublic": 660,
+      "totalOffer": 550,
+      "discount": 17
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض الستيفيا: علبتين والتالتة بنص التمن",
+      "titleEn": "Stevia: 2 boxes + 3rd at half price",
+      "items": [
+        {
+          "name": "ستيفيا",
+          "qty": 3,
+          "publicPrice": 150,
+          "offerPrice": 125
+        }
+      ],
+      "totalPublic": 450,
+      "totalOffer": 375,
+      "discount": 17
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس علاج القشرة الدهنية (3 شامبو القشرة)",
+      "titleEn": "Oily Dandruff Treatment Course (3 Anti-Dandruff Shampoo)",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 267
+        },
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 266
+        }
+      ],
+      "totalPublic": 1200,
+      "totalOffer": 800,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس العناية بالشعر المتكامل",
+      "titleEn": "Complete Hair Care Course",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 312
+        },
+        {
+          "name": "لوشن الشعر",
+          "qty": 1,
+          "publicPrice": 500,
+          "offerPrice": 389
+        },
+        {
+          "name": "سيرم الشعر",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 311
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 288
+        }
+      ],
+      "totalPublic": 1670,
+      "totalOffer": 1300,
+      "discount": 22
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس الطاقة وتدعيم الصحة العامة",
+      "titleEn": "Energy & General Health Course (3 Turbocita)",
+      "items": [
+        {
+          "name": "توربوسيتا سوبيا",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 234
+        },
+        {
+          "name": "توربوسيتا تمر هندي",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 233
+        },
+        {
+          "name": "توربوسيتا تفاح",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 233
+        }
+      ],
+      "totalPublic": 1050,
+      "totalOffer": 700,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس تدعيم المناعة والفيتامينات (3 علب أوركينتا)",
+      "titleEn": "Immunity & Vitamins Course (3 Orcinta)",
+      "items": [
+        {
+          "name": "أوركينتا",
+          "qty": 3,
+          "publicPrice": 330,
+          "offerPrice": 220
+        }
+      ],
+      "totalPublic": 990,
+      "totalOffer": 660,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس القوة واللمعان والحماية (3 سيرم الشعر)",
+      "titleEn": "Strength, Shine & Protection Course (3 Hair Serum)",
+      "items": [
+        {
+          "name": "سيرم الشعر",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 267
+        },
+        {
+          "name": "سيرم الشعر",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 266
+        }
+      ],
+      "totalPublic": 1200,
+      "totalOffer": 800,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس التجاعيد والندبات (3 سيرم الوجه)",
+      "titleEn": "Wrinkles & Scars Course (3 Whitening Serum)",
+      "items": [
+        {
+          "name": "سيرم الوجه",
+          "qty": 2,
+          "publicPrice": 350,
+          "offerPrice": 233
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 234
+        }
+      ],
+      "totalPublic": 1050,
+      "totalOffer": 700,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس علاج حب الشباب (3 غسول الوجه)",
+      "titleEn": "Acne Treatment Course (3 Facial Cleanser)",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 2,
+          "publicPrice": 350,
+          "offerPrice": 233
+        },
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 234
+        }
+      ],
+      "totalPublic": 1050,
+      "totalOffer": 700,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس رفع المناعة",
+      "titleEn": "Immunity Boost Course",
+      "items": [
+        {
+          "name": "برودجو أيزوليت شوكولاتة",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 1037
+        },
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 263
+        }
+      ],
+      "totalPublic": 1630,
+      "totalOffer": 1300,
+      "discount": 20
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس العظام والمفاصل والخشونة (3 مساج جل سم النحل)",
+      "titleEn": "Bones & Joints Course (3 Bee Venom Massage Gel)",
+      "items": [
+        {
+          "name": "مساج جل سم النحل",
+          "qty": 2,
+          "publicPrice": 250,
+          "offerPrice": 167
+        },
+        {
+          "name": "مساج جل سم النحل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 166
+        }
+      ],
+      "totalPublic": 750,
+      "totalOffer": 500,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس استعادة قوة ولمعان الشعر",
+      "titleEn": "Hair Strength & Shine Restore Course",
+      "items": [
+        {
+          "name": "لوشن الشعر",
+          "qty": 1,
+          "publicPrice": 500,
+          "offerPrice": 360
+        },
+        {
+          "name": "سيرم الشعر",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 288
+        },
+        {
+          "name": "شامبو الشعر",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 252
+        }
+      ],
+      "totalPublic": 1250,
+      "totalOffer": 900,
+      "discount": 28
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر وبشرة",
+      "title": "روتين المصيف",
+      "titleEn": "Summer Routine",
+      "items": [
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 228
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 304
+        },
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 190
+        },
+        {
+          "name": "ليف إن",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 228
+        }
+      ],
+      "totalPublic": 1250,
+      "totalOffer": 950,
+      "discount": 24
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس علاج مقاومة الإنسولين وشد البطن والسيلوليت",
+      "titleEn": "Insulin Resistance, Tummy Firming & Cellulite Course",
+      "items": [
+        {
+          "name": "إنسويست",
+          "qty": 2,
+          "publicPrice": 390,
+          "offerPrice": 273
+        },
+        {
+          "name": "إنسويست",
+          "qty": 1,
+          "publicPrice": 390,
+          "offerPrice": 274
+        },
+        {
+          "name": "فيرمنج جل",
+          "qty": 2,
+          "publicPrice": 250,
+          "offerPrice": 175
+        }
+      ],
+      "totalPublic": 1670,
+      "totalOffer": 1170,
+      "discount": 30
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس البشرة الزجاجية والحماية",
+      "titleEn": "Glass Skin & Protection Course",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 257
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 257
+        },
+        {
+          "name": "كريم التفتيح",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 293
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 293
+        }
+      ],
+      "totalPublic": 1500,
+      "totalOffer": 1100,
+      "discount": 27
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض الحماية الثلاثية (3 صن سكرين SPF 50)",
+      "titleEn": "Triple Protection (3 Sunscreen SPF 50)",
+      "items": [
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 267
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 266
+        }
+      ],
+      "totalPublic": 1200,
+      "totalOffer": 800,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض الترطيب الثلاثي (3 مرطب Water Gel)",
+      "titleEn": "Triple Hydration (3 Moisturizer Water Gel)",
+      "items": [
+        {
+          "name": "مرطب Water Gel",
+          "qty": 3,
+          "publicPrice": 300,
+          "offerPrice": 200
+        }
+      ],
+      "totalPublic": 900,
+      "totalOffer": 600,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "مجموعة العناية اليومية المتكاملة",
+      "titleEn": "Complete Daily Care Bundle",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 277
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 316
+        },
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 197
+        }
+      ],
+      "totalPublic": 1000,
+      "totalOffer": 790,
+      "discount": 21
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس التفتيح السريع (3 كريم التفتيح)",
+      "titleEn": "Fast Whitening Course (3 Whitening Cream)",
+      "items": [
+        {
+          "name": "كريم التفتيح",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 267
+        },
+        {
+          "name": "كريم التفتيح",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 266
+        }
+      ],
+      "totalPublic": 1200,
+      "totalOffer": 800,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس التخسيس المكثف",
+      "titleEn": "Intensive Slimming Course",
+      "items": [
+        {
+          "name": "فات بوم",
+          "qty": 3,
+          "publicPrice": 350,
+          "offerPrice": 237
+        },
+        {
+          "name": "ستيفيا",
+          "qty": 1,
+          "publicPrice": 150,
+          "offerPrice": 102
+        },
+        {
+          "name": "توربوسيتا قهوة",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 237
+        }
+      ],
+      "totalPublic": 1550,
+      "totalOffer": 1050,
+      "discount": 32
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس كسر ثبات الوزن وزيادة معدلات الحرق",
+      "titleEn": "Break Weight Plateau & Boost Burn Course",
+      "items": [
+        {
+          "name": "إنسويست",
+          "qty": 2,
+          "publicPrice": 390,
+          "offerPrice": 269
+        },
+        {
+          "name": "توربوسيتا قهوة",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 242
+        }
+      ],
+      "totalPublic": 1130,
+      "totalOffer": 780,
+      "discount": 31
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس الترطيب والنضارة",
+      "titleEn": "Hydration & Glow Course",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 245
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 245
+        },
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 210
+        }
+      ],
+      "totalPublic": 1000,
+      "totalOffer": 700,
+      "discount": 30
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس البشرة الزجاجية (حماية وترطيب)",
+      "titleEn": "Glass Skin Course (Protection & Hydration)",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 275
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 275
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 314
+        },
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 236
+        }
+      ],
+      "totalPublic": 1400,
+      "totalOffer": 1100,
+      "discount": 21
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس علاج مقاومة الإنسولين والحرق",
+      "titleEn": "Insulin Resistance & Burn Course",
+      "items": [
+        {
+          "name": "إنسويست",
+          "qty": 2,
+          "publicPrice": 390,
+          "offerPrice": 327
+        },
+        {
+          "name": "ستيفيا",
+          "qty": 1,
+          "publicPrice": 150,
+          "offerPrice": 126
+        }
+      ],
+      "totalPublic": 930,
+      "totalOffer": 780,
+      "discount": 16
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس المكممين",
+      "titleEn": "Post-Sleeve Course",
+      "items": [
+        {
+          "name": "برودجو أيزوليت فانيليا",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 1024
+        },
+        {
+          "name": "برودجو أيزوليت شوكولاتة",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 1024
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 292
+        },
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 260
+        }
+      ],
+      "totalPublic": 3300,
+      "totalOffer": 2600,
+      "discount": 21
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس علاج القشرة والصدفية والحماية",
+      "titleEn": "Dandruff, Psoriasis & Protection Course",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 300
+        },
+        {
+          "name": "سيرم الشعر",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 800,
+      "totalOffer": 600,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس الإنبات وعلاج التساقط",
+      "titleEn": "Regrowth & Hair Fall Course",
+      "items": [
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 276
+        },
+        {
+          "name": "لوشن الشعر",
+          "qty": 1,
+          "publicPrice": 500,
+          "offerPrice": 374
+        }
+      ],
+      "totalPublic": 870,
+      "totalOffer": 650,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس تفتيح وترطيب الأماكن الداكنة",
+      "titleEn": "Dark Areas Whitening & Hydration Course",
+      "items": [
+        {
+          "name": "كريم التفتيح",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 314
+        },
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 236
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 550,
+      "discount": 21
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس الأندر آرم",
+      "titleEn": "Underarm Course",
+      "items": [
+        {
+          "name": "كريم التفتيح",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 308
+        },
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 192
+        }
+      ],
+      "totalPublic": 650,
+      "totalOffer": 500,
+      "discount": 23
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس الحماية والنضارة",
+      "titleEn": "Protection & Glow Course",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 239
+        },
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 273
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 238
+        }
+      ],
+      "totalPublic": 1100,
+      "totalOffer": 750,
+      "discount": 32
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض 4 داجو إيست + كيرفي إيست",
+      "titleEn": "4 DajoEast + Curvy East",
+      "items": [
+        {
+          "name": "داجو إيست",
+          "qty": 4,
+          "publicPrice": 220,
+          "offerPrice": 156
+        },
+        {
+          "name": "كيرفي إيست",
+          "qty": 1,
+          "publicPrice": 360,
+          "offerPrice": 256
+        }
+      ],
+      "totalPublic": 1240,
+      "totalOffer": 880,
+      "discount": 29
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض إنسويست: علبة والتانية بنص التمن",
+      "titleEn": "Insuest: second box at half price",
+      "items": [
+        {
+          "name": "إنسويست",
+          "qty": 1,
+          "publicPrice": 390,
+          "offerPrice": 293
+        },
+        {
+          "name": "إنسويست",
+          "qty": 1,
+          "publicPrice": 390,
+          "offerPrice": 292
+        }
+      ],
+      "totalPublic": 780,
+      "totalOffer": 585,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض مساج جل سم النحل: علبة والتانية بنص التمن",
+      "titleEn": "Bee Venom Massage Gel: second box at half price",
+      "items": [
+        {
+          "name": "مساج جل سم النحل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        },
+        {
+          "name": "مساج جل سم النحل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 187
+        }
+      ],
+      "totalPublic": 500,
+      "totalOffer": 375,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض سيرم الوجه: علبة والتانية بنص التمن",
+      "titleEn": "Whitening Serum: second box at half price",
+      "items": [
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 263
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 262
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 525,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس الشعر الحديدي",
+      "titleEn": "Iron Hair Course (2 Hairskino + Hair Lotion + Anti-Dandruff Shampoo)",
+      "items": [
+        {
+          "name": "هيرسكينو",
+          "qty": 2,
+          "publicPrice": 370,
+          "offerPrice": 225
+        },
+        {
+          "name": "لوشن الشعر",
+          "qty": 1,
+          "publicPrice": 500,
+          "offerPrice": 305
+        },
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 244
+        }
+      ],
+      "totalPublic": 1640,
+      "totalOffer": 999,
+      "discount": 39
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض شامبو القشرة: علبة والتانية بنص التمن",
+      "titleEn": "Anti-Dandruff Shampoo: second box at half price",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 800,
+      "totalOffer": 600,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض هيرسكينو: علبة والتانية بنص التمن",
+      "titleEn": "Hairskino: second box at half price",
+      "items": [
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 278
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 277
+        }
+      ],
+      "totalPublic": 740,
+      "totalOffer": 555,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس وقف التساقط وتقوية الأظافر (3 علب هيرسكينو)",
+      "titleEn": "Hair Fall Stop & Nail Strength Course (3 Hairskino)",
+      "items": [
+        {
+          "name": "هيرسكينو",
+          "qty": 2,
+          "publicPrice": 370,
+          "offerPrice": 247
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 246
+        }
+      ],
+      "totalPublic": 1110,
+      "totalOffer": 740,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس الدعم الكامل لعمليات الجراحات والمكممين",
+      "titleEn": "Complete Post-Surgery & Sleeve Support Course",
+      "items": [
+        {
+          "name": "برودجو أيزوليت فانيليا",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 1015
+        },
+        {
+          "name": "برودجو أيزوليت شوكولاتة",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 1015
+        },
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 258
+        },
+        {
+          "name": "توربوسيتا ليمون",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 273
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 289
+        }
+      ],
+      "totalPublic": 3650,
+      "totalOffer": 2850,
+      "discount": 22
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس زيادة الوزن والكيرفات المتكامل",
+      "titleEn": "Complete Weight Gain & Curves Course",
+      "items": [
+        {
+          "name": "داجو إيست",
+          "qty": 3,
+          "publicPrice": 220,
+          "offerPrice": 165
+        },
+        {
+          "name": "كيرفي إيست",
+          "qty": 2,
+          "publicPrice": 360,
+          "offerPrice": 270
+        }
+      ],
+      "totalPublic": 1380,
+      "totalOffer": 1035,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس بديل الحقن والتكميم",
+      "titleEn": "Injections & Sleeve Alternative Course",
+      "items": [
+        {
+          "name": "فات بوم",
+          "qty": 2,
+          "publicPrice": 350,
+          "offerPrice": 264
+        },
+        {
+          "name": "إنسويست",
+          "qty": 1,
+          "publicPrice": 390,
+          "offerPrice": 295
+        },
+        {
+          "name": "توربوسيتا قهوة",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 264
+        },
+        {
+          "name": "ستيفيا",
+          "qty": 1,
+          "publicPrice": 150,
+          "offerPrice": 113
+        }
+      ],
+      "totalPublic": 1590,
+      "totalOffer": 1200,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس دعم الأنوثة والعناية بمظهر الجسم",
+      "titleEn": "Femininity Support & Body Care Course",
+      "items": [
+        {
+          "name": "كيرفي إيست",
+          "qty": 2,
+          "publicPrice": 360,
+          "offerPrice": 267
+        },
+        {
+          "name": "فيرمنج جل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 186
+        }
+      ],
+      "totalPublic": 970,
+      "totalOffer": 720,
+      "discount": 26
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "باندل العناية بالشعر المتكامل Gold",
+      "titleEn": "Complete Hair Care Bundle Gold",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 300
+        },
+        {
+          "name": "لوشن الشعر",
+          "qty": 1,
+          "publicPrice": 500,
+          "offerPrice": 374
+        },
+        {
+          "name": "سيرم الشعر",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 299
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 277
+        }
+      ],
+      "totalPublic": 1670,
+      "totalOffer": 1250,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "باندل العناية بالبشرة المتكامل Gold",
+      "titleEn": "Complete Skin Care Bundle Gold",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 263
+        },
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 225
+        },
+        {
+          "name": "سيرم الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 262
+        },
+        {
+          "name": "كريم التفتيح",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 1400,
+      "totalOffer": 1050,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "أطفال",
+      "title": "باندل العناية الكاملة للأطفال Gold",
+      "titleEn": "Complete Kids Care Bundle Gold",
+      "items": [
+        {
+          "name": "شامبو تميمة للأطفال",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        },
+        {
+          "name": "كريم شعر تميمة",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 226
+        },
+        {
+          "name": "شاور جل تميمة",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        },
+        {
+          "name": "مرطب بشرة تميمة",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        }
+      ],
+      "totalPublic": 1050,
+      "totalOffer": 790,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "كورس العناية بفروة الرأس وترطيب الشعر",
+      "titleEn": "Scalp Care & Hair Hydration Course",
+      "items": [
+        {
+          "name": "شامبو القشرة",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 337
+        },
+        {
+          "name": "ليف إن",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 253
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 590,
+      "discount": 16
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض رول أون: علبة والتانية بنص التمن",
+      "titleEn": "Whitening Roll-On: second box at half price",
+      "items": [
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        },
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 187
+        }
+      ],
+      "totalPublic": 500,
+      "totalOffer": 375,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض فيرمنج جل: علبة والتانية بنص التمن",
+      "titleEn": "Firming Gel: second box at half price",
+      "items": [
+        {
+          "name": "فيرمنج جل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 188
+        },
+        {
+          "name": "فيرمنج جل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 187
+        }
+      ],
+      "totalPublic": 500,
+      "totalOffer": 375,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض مرطب Water Gel: علبة والتانية بنص التمن",
+      "titleEn": "Moisturizer Water Gel: second box at half price",
+      "items": [
+        {
+          "name": "مرطب Water Gel",
+          "qty": 2,
+          "publicPrice": 300,
+          "offerPrice": 225
+        }
+      ],
+      "totalPublic": 600,
+      "totalOffer": 450,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض صن سكرين SPF 50: علبة والتانية بنص التمن",
+      "titleEn": "Sunscreen SPF 50: second box at half price",
+      "items": [
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 800,
+      "totalOffer": 600,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض كريم التفتيح: علبة والتانية بنص التمن",
+      "titleEn": "Whitening Cream: second box at half price",
+      "items": [
+        {
+          "name": "كريم التفتيح",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 800,
+      "totalOffer": 600,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "عرض غسول الوجه: علبة والتانية بنص التمن",
+      "titleEn": "Facial Cleanser: second box at half price",
+      "items": [
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 263
+        },
+        {
+          "name": "غسول الوجه",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 262
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 525,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "عرض برودجو أيزوليت: علبة والتانية بنص التمن",
+      "titleEn": "Prodajo Isolate: second box at half price",
+      "items": [
+        {
+          "name": "برودجو أيزوليت فانيليا",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 975
+        },
+        {
+          "name": "برودجو أيزوليت شوكولاتة",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 975
+        }
+      ],
+      "totalPublic": 2600,
+      "totalOffer": 1950,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض فات بوم: علبة والتانية بنص التمن",
+      "titleEn": "Fat Boom: second box at half price",
+      "items": [
+        {
+          "name": "فات بوم",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 263
+        },
+        {
+          "name": "فات بوم",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 262
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 525,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض ليف إن: علبة والتانية بنص التمن",
+      "titleEn": "Leave-In Conditioner: second box at half price",
+      "items": [
+        {
+          "name": "ليف إن",
+          "qty": 2,
+          "publicPrice": 300,
+          "offerPrice": 225
+        }
+      ],
+      "totalPublic": 600,
+      "totalOffer": 450,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض شامبو الشعر: علبة والتانية بنص التمن",
+      "titleEn": "Hair Shampoo: second box at half price",
+      "items": [
+        {
+          "name": "شامبو الشعر",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 263
+        },
+        {
+          "name": "شامبو الشعر",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 262
+        }
+      ],
+      "totalPublic": 700,
+      "totalOffer": 525,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض سيرم الشعر: علبة والتانية بنص التمن",
+      "titleEn": "Hair Serum: second box at half price",
+      "items": [
+        {
+          "name": "سيرم الشعر",
+          "qty": 2,
+          "publicPrice": 400,
+          "offerPrice": 300
+        }
+      ],
+      "totalPublic": 800,
+      "totalOffer": 600,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "شعر",
+      "title": "عرض لوشن الشعر: علبة والتانية بنص التمن",
+      "titleEn": "Hair Lotion: second box at half price",
+      "items": [
+        {
+          "name": "لوشن الشعر",
+          "qty": 2,
+          "publicPrice": 500,
+          "offerPrice": 375
+        }
+      ],
+      "totalPublic": 1000,
+      "totalOffer": 750,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس الإلكتروليت والطاقة والحرق",
+      "titleEn": "Electrolytes, Energy & Burn Course (3 Turbocita)",
+      "items": [
+        {
+          "name": "توربوسيتا ليمون",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 234
+        },
+        {
+          "name": "توربوسيتا تفاح",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 233
+        },
+        {
+          "name": "توربوسيتا قهوة",
+          "qty": 1,
+          "publicPrice": 350,
+          "offerPrice": 233
+        }
+      ],
+      "totalPublic": 1050,
+      "totalOffer": 700,
+      "discount": 33
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "بشرة",
+      "title": "كورس المصيف",
+      "titleEn": "Summer Course",
+      "items": [
+        {
+          "name": "صن سكرين SPF 50",
+          "qty": 1,
+          "publicPrice": 400,
+          "offerPrice": 295
+        },
+        {
+          "name": "مرطب Water Gel",
+          "qty": 1,
+          "publicPrice": 300,
+          "offerPrice": 221
+        },
+        {
+          "name": "رول أون",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 184
+        }
+      ],
+      "totalPublic": 950,
+      "totalOffer": 700,
+      "discount": 26
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "كورس التكميم",
+      "titleEn": "Sleeve Surgery Course",
+      "items": [
+        {
+          "name": "برودجو أيزوليت فانيليا",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 952
+        },
+        {
+          "name": "برودجو أيزوليت شوكولاتة",
+          "qty": 1,
+          "publicPrice": 1300,
+          "offerPrice": 952
+        },
+        {
+          "name": "هيرسكينو",
+          "qty": 1,
+          "publicPrice": 370,
+          "offerPrice": 271
+        },
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 242
+        },
+        {
+          "name": "فيرمنج جل",
+          "qty": 1,
+          "publicPrice": 250,
+          "offerPrice": 183
+        }
+      ],
+      "totalPublic": 3550,
+      "totalOffer": 2600,
+      "discount": 27
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "كورس بديل التكميم الطبيعي",
+      "titleEn": "Natural Sleeve Alternative Course",
+      "items": [
+        {
+          "name": "فات بوم",
+          "qty": 2,
+          "publicPrice": 350,
+          "offerPrice": 225
+        },
+        {
+          "name": "إنسويست",
+          "qty": 1,
+          "publicPrice": 390,
+          "offerPrice": 250
+        }
+      ],
+      "totalPublic": 1090,
+      "totalOffer": 700,
+      "discount": 36
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "وزن ورشاقة",
+      "title": "عرض كيرفي إيست: علبة والتانية بنص التمن",
+      "titleEn": "Curvy East: second box at half price",
+      "items": [
+        {
+          "name": "كيرفي إيست",
+          "qty": 2,
+          "publicPrice": 360,
+          "offerPrice": 270
+        }
+      ],
+      "totalPublic": 720,
+      "totalOffer": 540,
+      "discount": 25
+    },
+    {
+      "company": "باريشيا فارما",
+      "category": "مكملات غذائية",
+      "title": "عرض أوركينتا: علبة والتانية بنص التمن",
+      "titleEn": "Orcinta: second box at half price",
+      "items": [
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 248
+        },
+        {
+          "name": "أوركينتا",
+          "qty": 1,
+          "publicPrice": 330,
+          "offerPrice": 247
+        }
+      ],
+      "totalPublic": 660,
+      "totalOffer": 495,
+      "discount": 25
+    }
+  ]
+}
